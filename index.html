@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Birthday Quest</title>
+    <title>Birthday Quest ❤️</title>
     <style>
         :root {
-            --primary: #ff4b81;
-            --secondary: #ff9e75;
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --glass: rgba(255, 255, 255, 0.9);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --text-color: #2d3748;
+            --primary: #ff3e80;
+            --primary-dark: #d61a5e;
+            --accent: #5cc7c2;
+            --text: #2d3748;
+            --glass: rgba(255, 255, 255, 0.90);
+            --glass-border: rgba(255, 255, 255, 0.6);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -19,389 +19,494 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Helvetica Neue', sans-serif;
-            background: var(--bg-gradient);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100dvh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--text-color);
+            color: var(--text);
             overflow-x: hidden;
+            user-select: none;
         }
 
-        /* Фон с плавающими кругами для красоты */
-        .bg-shape {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: 0;
-            opacity: 0.6;
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .shape-1 { width: 300px; height: 300px; background: #ff4b81; top: -50px; left: -50px; }
-        .shape-2 { width: 250px; height: 250px; background: #4fd1c5; bottom: -50px; right: -50px; }
 
-        /* Основной контейнер (карточка) */
         .card {
             position: relative;
             z-index: 10;
             background: var(--glass);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 2px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 30px 20px;
-            width: 90%;
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 25px 20px;
+            width: 92%;
             max-width: 400px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
             text-align: center;
-            transition: transform 0.4s ease, opacity 0.4s ease;
-        }
-
-        /* Прогресс бар */
-        .progress-container {
-            width: 100%;
-            background: rgba(0,0,0,0.05);
-            height: 6px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 0%;
-            transition: width 0.5s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         h1 { margin: 0 0 10px; font-size: 24px; font-weight: 800; color: #1a202c; }
-        h2 { margin: 0 0 15px; font-size: 18px; color: #4a5568; text-transform: uppercase; letter-spacing: 1px; }
-        p { font-size: 16px; line-height: 1.5; margin-bottom: 25px; color: #4a5568; }
+        h2 { margin: 0 0 15px; font-size: 14px; color: var(--primary); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+        p { font-size: 16px; line-height: 1.5; margin-bottom: 20px; color: #4a5568; }
 
         .emoji-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
+            font-size: 50px;
+            margin-bottom: 10px;
             display: inline-block;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
             animation: float 3s ease-in-out infinite;
         }
 
-        /* Поле ввода */
         input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid transparent;
-            background: #f7fafc;
-            border-radius: 16px;
-            font-size: 18px;
-            text-align: center;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-            outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            width: 100%; padding: 15px; border: 2px solid #e2e8f0; background: #fff;
+            border-radius: 16px; font-size: 18px; text-align: center; margin-bottom: 15px; outline: none;
         }
-        input:focus {
-            background: #fff;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(255, 75, 129, 0.1);
-        }
+        input:focus { border-color: var(--primary); }
 
-        /* Кнопка */
         button {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 18px;
-            font-weight: bold;
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; border-radius: 16px; font-size: 18px; font-weight: 700;
+            cursor: pointer; transition: transform 0.1s; box-shadow: 0 8px 20px -5px rgba(214, 26, 94, 0.4);
+        }
+        button:active { transform: scale(0.97); }
+
+        /* --- Memory Game --- */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+            perspective: 1000px;
+        }
+
+        .mem-card {
+            background: transparent;
+            aspect-ratio: 1/1;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 10px 20px rgba(255, 75, 129, 0.3);
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            -webkit-tap-highlight-color: transparent;
         }
-        button:active { transform: scale(0.96); }
 
-        /* Сообщение об ошибке */
-        .error {
-            color: #e53e3e;
-            font-size: 14px;
-            margin-top: 10px;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s;
-            height: 0;
+        .mem-card.flip { transform: rotateY(180deg); }
+        .mem-card.matched { animation: pulse 0.5s ease-in-out; }
+
+        .mem-front, .mem-back {
+            width: 100%; height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .error.visible { opacity: 1; transform: translateY(0); height: auto; margin-bottom: 10px;}
 
-        /* Анимации */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+        .mem-front {
+            background: white;
+            transform: rotateY(180deg);
+            font-size: 28px;
+            border: 2px solid var(--primary);
         }
         
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-        .shake { animation: shake 0.4s ease-in-out; }
-
-        /* Блок с подсказкой (Overlay) */
-        .clue-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.98);
-            z-index: 20;
-            border-radius: 22px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.9);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .clue-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-            transform: scale(1);
-        }
-        .clue-text {
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--text-color);
-            margin-bottom: 20px;
-        }
-        .clue-highlight {
-            color: var(--primary);
+        .mem-back {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             font-size: 24px;
-            display: block;
-            margin-top: 10px;
+            color: rgba(255,255,255,0.8);
         }
 
-        /* Канвас для конфетти */
-        #confetti-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 50;
+        /* --- TTT Game --- */
+        .ttt-board {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            margin: 0 auto 20px; max-width: 260px; background: rgba(255,255,255,0.5);
+            padding: 10px; border-radius: 20px;
         }
+        .ttt-cell {
+            background: white; aspect-ratio: 1; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .ttt-cell.x { color: var(--primary); }
+        .ttt-cell.o { color: var(--accent); }
+
+        /* --- Overlay & Utils --- */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98); z-index: 50; border-radius: 28px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transform: scale(0.9); transition: all 0.4s;
+        }
+        .overlay.active { opacity: 1; pointer-events: all; transform: scale(1); }
+        
+        .clue-box { 
+            color: var(--primary); font-size: 18px; font-weight: 800;
+            border: 2px dashed var(--primary); padding: 15px; border-radius: 12px; margin: 20px 0;
+            background: rgba(255, 62, 128, 0.05);
+        }
+
+        .error-msg { color: #e53e3e; font-weight: bold; font-size: 14px; height: 0; overflow: hidden; transition: 0.3s; margin-bottom: 5px;}
+        .error-msg.visible { height: 25px; }
+
+        .progress-wrap { width: 100%; height: 6px; background: #edf2f7; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse { 0% { transform: scale(1) rotateY(180deg); } 50% { transform: scale(1.1) rotateY(180deg); } 100% { transform: scale(1) rotateY(180deg); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        .shake { animation: shake 0.4s; }
+        
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
     </style>
 </head>
 <body>
 
-    <div class="bg-shape shape-1"></div>
-    <div class="bg-shape shape-2"></div>
     <canvas id="confetti-canvas"></canvas>
-
-    <div class="card" id="game-card">
-        <!-- Контент генерируется JS -->
-    </div>
+    <div class="card" id="game-card"></div>
 
     <script>
-        // ============================================================
-        // 🎁 НАСТРОЙКИ КВЕСТА
-        // Редактируйте вопросы, ответы и места подарков здесь
-        // ============================================================
-        
-        const questions = [
+        // ==========================================
+        // ⚙️ КОНФИГУРАЦИЯ УРОВНЕЙ (РЕДАКТИРОВАТЬ ТУТ)
+        // ==========================================
+        const levels = [
             {
-                id: 1,
-                icon: "🧱", // Иконка для Lego
-                title: "Уровень 1: Начало сборки",
-                text: "Первый подарок маленький, но с характером. <br>Отгадай: Кто живет в ананасе на дне океана?", 
-                answers: ["губка боб", "спанч боб", "spongebob"], 
-                clue: "В ящике со столовыми приборами! 🍴"
+                type: "question",
+                icon: "🧩", 
+                title: "Уровень 1: Собири меня!",
+                text: "Начнем с простого. Как зовут лучшего друга Губки Боба?", 
+                answers: ["патрик"], 
+                clue: "Ищи у Ботаника! 👓"
             },
             {
-                id: 2,
-                icon: "🚂", // Иконка для Honkai (Поезд/Космос)
+                type: "question",
+                icon: "🌌", 
                 title: "Уровень 2: Звездный путь",
-                text: "Этот подарок прибыл с другой планеты. <br>Вопрос: Как называется наша любимая пиццерия?",
-                answers: ["додо", "папа джонс", "доминос"], 
-                clue: "За микроволновкой! 🍕"
+                text: "Подарок из космоса. С какой пиццерии мы чаще всего заказываем пиццу?",
+                answers: ["доминос", "dominos"], 
+                clue: "В Соколе наёдёш! 🦅"
             },
             {
-                id: 3,
-                icon: "✨", // Иконка для LED дерева
-                title: "Уровень 3: Магия света",
-                text: "Чтобы найти этот подарок, нужно добавить немного уюта. <br>В каком месяце мы поженились?",
-                answers: ["июль", "07", "в июле"], 
-                clue: "В шкафу, на полке с полотенцами! 🛁"
+                type: "memory",
+                icon: "💡", 
+                title: "Уровень 3: Зажги огни",
+                text: "Найди 6 пар!",
+                clue: "Тигр охраняет! 🦁"
             },
             {
-                id: 4,
-                icon: "🧙‍♂️", // Иконка для Гарри Поттера
-                title: "Финал: Хогвартс ждет",
-                text: "Самый большой секрет. <br>Назови имя эльфа-домовика из Гарри Поттера.",
-                answers: ["добби", "dobby"], 
-                clue: "ПОД КРОВАТЬЮ! 🎉"
+                type: "ttt",
+                icon: "🎮", 
+                title: "Финал: Битва",
+                text: "Финальный босс! Обыграй меня в Крестики-Нолики (ты за ❌).",
+                clue: "ГЛАВНЫЙ ПРИЗ ИЩИ В ДИВАНАХ, КОТОРЫЕ КАК ИНЬ-ЯНЬ СТОЯТ! ☯️"
             }
         ];
 
-        // ============================================================
+        // ==========================================
         
-        let currentStep = 0;
+        let currentLevel = 0;
         const card = document.getElementById('game-card');
+        
+        // Memory vars
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let matchesFound = 0;
 
-        // Запуск
-        function initGame() {
-            renderIntro();
-        }
+        // TTT vars
+        let tttBoard = [];
+        let tttActive = false;
 
-        // Экран приветствия
-        function renderIntro() {
+        function init() {
             card.innerHTML = `
                 <div class="emoji-icon">🎁</div>
                 <h1>С Днем Рождения!</h1>
-                <p>Любимая, я спрятал 4 подарка в квартире. Чтобы их найти, тебе нужно пройти этот квест!</p>
-                <button onclick="startGame()">Начать поиск</button>
+                <p>Я спрятал несколько подарков. Пройди испытания, чтобы их найти!</p>
+                <button onclick="startLevel()">Начать квест</button>
             `;
         }
 
-        function startGame() {
-            currentStep = 0;
-            renderQuestion();
+        function startLevel() {
+            render();
         }
 
-        // Отрисовка вопроса
-        function renderQuestion() {
-            if (currentStep >= questions.length) {
-                renderFinish();
+        function render() {
+            if (currentLevel >= levels.length) { showEnd(); return; }
+            
+            const lvl = levels[currentLevel];
+            const progress = (currentLevel / levels.length) * 100;
+            
+            let content = '';
+            
+            if (lvl.type === 'question') {
+                content = `
+                    <p>${lvl.text}</p>
+                    <input type="text" id="ans" placeholder="Ответ..." autocomplete="off">
+                    <div class="error-msg" id="err">Неверно!</div>
+                    <button onclick="checkTextAnswer()">Проверить</button>
+                `;
+            } else if (lvl.type === 'memory') {
+                content = `
+                    <p>${lvl.text}</p>
+                    <div class="memory-grid" id="mem-grid"></div>
+                `;
+            } else if (lvl.type === 'ttt') {
+                tttBoard = Array(9).fill('');
+                tttActive = true;
+                content = `
+                    <p>${lvl.text}</p>
+                    <div class="ttt-board">
+                         ${tttBoard.map((_, i) => `<div class="ttt-cell" onclick="tttMove(${i})" id="c-${i}"></div>`).join('')}
+                    </div>
+                    <div id="ttt-status" style="font-weight:bold; color:#ff3e80;">Твой ход!</div>
+                `;
+            }
+
+            // 1. Скрываем карточку
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(10px)';
+            
+            // 2. Ждем окончания анимации, затем меняем контент
+            setTimeout(() => {
+                card.innerHTML = `
+                    <div class="progress-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
+                    <div class="emoji-icon">${lvl.icon}</div>
+                    <h2>${lvl.title}</h2>
+                    ${content}
+                    
+                    <div class="overlay" id="win-overlay">
+                        <div class="emoji-icon">🎉</div>
+                        <h2>Отлично!</h2>
+                        <p>Подарок находится:</p>
+                        <div class="clue-box">${lvl.clue}</div>
+                        <button onclick="nextLevel()">Нашла!</button>
+                    </div>
+                `;
+
+                // 3. Показываем карточку
+                card.style.opacity = 1;
+                card.style.transform = 'translateY(0)';
+
+                // 4. Инициализируем игры ТОЛЬКО после того, как HTML добавлен
+                if (lvl.type === 'memory') {
+                    initMemoryGame();
+                }
+            }, 300);
+        }
+
+        // --- Text Logic ---
+        function checkTextAnswer() {
+            const inp = document.getElementById('ans');
+            const val = inp.value.trim().toLowerCase();
+            const correct = levels[currentLevel].answers.map(a => a.toLowerCase());
+            
+            if (correct.includes(val)) {
+                inp.blur();
+                levelComplete();
+            } else {
+                showError();
+            }
+        }
+
+        // --- Memory Logic ---
+        function initMemoryGame() {
+            const grid = document.getElementById('mem-grid');
+            if (!grid) return; // Защита от ошибок
+
+            const icons = ['🏠', '🏠', '💍', '💍', '🐱', '🐱', '✈️', '✈️', '💡', '💡', '❤️', '❤️'];
+            matchesFound = 0;
+            
+            icons.sort(() => 0.5 - Math.random());
+
+            icons.forEach(icon => {
+                const el = document.createElement('div');
+                el.classList.add('mem-card');
+                el.dataset.icon = icon;
+                el.innerHTML = `
+                    <div class="mem-front">${icon}</div>
+                    <div class="mem-back">?</div>
+                `;
+                el.addEventListener('click', flipCard);
+                grid.appendChild(el);
+            });
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flip');
+
+            if (!hasFlippedCard) {
+                hasFlippedCard = true;
+                firstCard = this;
                 return;
             }
 
-            const q = questions[currentStep];
-            const progressPercent = (currentStep / questions.length) * 100;
-
-            // Плавная смена контента
-            card.style.opacity = 0;
-            setTimeout(() => {
-                card.innerHTML = `
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: ${progressPercent}%"></div>
-                    </div>
-                    <div class="emoji-icon">${q.icon}</div>
-                    <h2>${q.title}</h2>
-                    <p>${q.text}</p>
-                    <input type="text" id="answer" placeholder="Введи ответ..." autocomplete="off">
-                    <div class="error" id="error-msg">Не-а, подумай еще! 😋</div>
-                    <button onclick="checkAnswer()">Проверить</button>
-                    
-                    <!-- Скрытый слой с подсказкой -->
-                    <div class="clue-overlay" id="clue-layer">
-                        <div class="emoji-icon">📍</div>
-                        <div class="clue-text">
-                            Правильно! Твой подарок спрятан:
-                            <span class="clue-highlight">${q.clue}</span>
-                        </div>
-                        <button onclick="nextStep()">Я нашла! Дальше</button>
-                    </div>
-                `;
-                card.style.opacity = 1;
-                
-                // Фокус на поле ввода (для удобства)
-                // На мобильных иногда лучше не авто-фокусить, чтобы клава не прыгала, 
-                // но здесь оставим для удобства.
-            }, 400);
+            secondCard = this;
+            checkForMatch();
         }
 
-        // Проверка ответа
-        function checkAnswer() {
-            const input = document.getElementById('answer');
-            const errorMsg = document.getElementById('error-msg');
-            const clueLayer = document.getElementById('clue-layer');
-            
-            const val = input.value.trim().toLowerCase();
-            const correct = questions[currentStep].answers.map(a => a.toLowerCase());
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.icon === secondCard.dataset.icon;
+            isMatch ? disableCards() : unflipCards();
+        }
 
-            if (correct.includes(val)) {
-                // Успех
-                input.blur(); // Убрать клавиатуру
-                fireConfetti(); // Салют
-                clueLayer.classList.add('active'); // Показать подсказку
-            } else {
-                // Ошибка
-                errorMsg.classList.add('visible');
-                card.classList.add('shake');
-                setTimeout(() => card.classList.remove('shake'), 400);
-                input.value = '';
+        function disableCards() {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            resetBoard();
+            matchesFound++;
+            if (matchesFound === 6) {
+                setTimeout(levelComplete, 600);
             }
         }
 
-        function nextStep() {
-            currentStep++;
-            renderQuestion();
-        }
-
-        // Финальный экран
-        function renderFinish() {
-            card.style.opacity = 0;
+        function unflipCards() {
+            lockBoard = true;
             setTimeout(() => {
-                fireConfetti();
-                setTimeout(fireConfetti, 500); // Двойной салют
-                card.innerHTML = `
-                    <div class="emoji-icon">❤️</div>
-                    <h1>Квест пройден!</h1>
-                    <p>Ты нашла все подарки!<br>Надеюсь, они тебе понравятся.<br>Люблю тебя до Луны и обратно! 🚀</p>
-                `;
-                card.style.opacity = 1;
-            }, 400);
+                firstCard.classList.remove('flip');
+                secondCard.classList.remove('flip');
+                resetBoard();
+            }, 1000);
         }
 
-        // === Логика Конфетти (встроена, чтобы не зависеть от интернета) ===
-        const canvas = document.getElementById('confetti-canvas');
-        const ctx = canvas.getContext('2d');
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        // --- TTT Logic ---
+        function tttMove(i) {
+            if (!tttActive || tttBoard[i] !== '') return;
+            
+            tttBoard[i] = 'X';
+            updateCell(i, 'X');
+            
+            if (checkWin('X')) { endGame(true); return; }
+            if (!tttBoard.includes('')) { 
+                document.getElementById('ttt-status').innerText = "Ничья! Еще раз...";
+                setTimeout(render, 1500); 
+                return; 
+            }
+
+            tttActive = false;
+            document.getElementById('ttt-status').innerText = "Думаю...";
+            setTimeout(aiMove, 600);
+        }
+
+        function aiMove() {
+            let move = findMove('O') ?? findMove('X') ?? (tttBoard[4] === '' ? 4 : null);
+            
+            if (move === null) {
+                let avail = tttBoard.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+                move = avail[Math.floor(Math.random() * avail.length)];
+            }
+
+            tttBoard[move] = 'O';
+            updateCell(move, 'O');
+
+            if (checkWin('O')) {
+                document.getElementById('ttt-status').innerText = "Я выиграл 😜";
+                setTimeout(render, 2000);
+            } else {
+                tttActive = true;
+                document.getElementById('ttt-status').innerText = "Твой ход!";
+            }
+        }
+
+        function findMove(player) {
+            const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let [a,b,c] of lines) {
+                if (tttBoard[a]===player && tttBoard[b]===player && tttBoard[c]==='') return c;
+                if (tttBoard[a]===player && tttBoard[c]===player && tttBoard[b]==='') return b;
+                if (tttBoard[b]===player && tttBoard[c]===player && tttBoard[a]==='') return a;
+            }
+            return null;
+        }
+
+        function updateCell(i, p) {
+            const c = document.getElementById(`c-${i}`);
+            if(c) {
+                c.innerText = p === 'X' ? '❌' : '⭕';
+                c.classList.add(p.toLowerCase());
+            }
+        }
+
+        function checkWin(p) {
+            const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return lines.some(l => tttBoard[l[0]]===p && tttBoard[l[1]]===p && tttBoard[l[2]]===p);
+        }
+
+        function endGame(win) {
+            if(win) levelComplete();
+        }
+
+        // --- Utils ---
+        function showError() {
+            const err = document.getElementById('err');
+            err.classList.add('visible');
+            card.classList.add('shake');
+            setTimeout(() => card.classList.remove('shake'), 500);
+        }
+
+        function levelComplete() {
+            fireConfetti();
+            document.getElementById('win-overlay').classList.add('active');
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            render();
+        }
+
+        function showEnd() {
+            fireConfetti();
+            setTimeout(fireConfetti, 500);
+            card.innerHTML = `
+                <div class="emoji-icon">❤️</div>
+                <h1>Ты нашла всё!</h1>
+                <p>Ты умница! Люблю тебя! 😘</p>
+            `;
+        }
+
+        // Confetti
+        const cvs = document.getElementById('confetti-canvas');
+        const ctx = cvs.getContext('2d');
         let confetti = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        function resize() { cvs.width = window.innerWidth; cvs.height = window.innerHeight; }
+        window.onresize = resize; resize();
 
         function fireConfetti() {
-            const colors = ['#ff4b81', '#4fd1c5', '#f6e05e', '#ffffff'];
-            for (let i = 0; i < 100; i++) {
-                confetti.push({
-                    x: window.innerWidth / 2,
-                    y: window.innerHeight / 2,
-                    w: Math.random() * 10 + 5,
-                    h: Math.random() * 5 + 5,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    vx: (Math.random() - 0.5) * 20,
-                    vy: (Math.random() - 0.5) * 20,
-                    grav: 0.1
-                });
-            }
-        }
-
-        function updateConfetti() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            confetti.forEach((c, index) => {
-                c.x += c.vx;
-                c.y += c.vy;
-                c.vy += c.grav;
-                c.vx *= 0.96;
-                c.vy *= 0.96;
-                
-                ctx.fillStyle = c.color;
-                ctx.fillRect(c.x, c.y, c.w, c.h);
-
-                if (c.y > canvas.height) confetti.splice(index, 1);
+            const cols = ['#ff3e80', '#5cc7c2', '#fbd38d'];
+            for(let i=0; i<100; i++) confetti.push({
+                x: window.innerWidth/2, y: window.innerHeight/2,
+                w: Math.random()*10+5, h: Math.random()*5+5, col: cols[Math.floor(Math.random()*3)],
+                vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, g: 0.2, d: 0.96
             });
-            requestAnimationFrame(updateConfetti);
         }
-        updateConfetti(); // Запуск цикла анимации
+        function loop() {
+            ctx.clearRect(0,0,cvs.width,cvs.height);
+            confetti.forEach((c,i) => {
+                c.x+=c.vx; c.y+=c.vy; c.vy+=c.g; c.vx*=c.d; c.vy*=c.d;
+                ctx.fillStyle=c.col; ctx.fillRect(c.x,c.y,c.w,c.h);
+                if(c.y>cvs.height) confetti.splice(i,1);
+            });
+            requestAnimationFrame(loop);
+        }
+        loop();
 
-        // Старт
-        initGame();
-
+        init();
     </script>
 </body>
-</html> 
+</html>
