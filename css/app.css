@@ -1025,6 +1025,71 @@ body[data-view="intro"] .progress {
     .level-head {
         margin-bottom: 14px;
     }
+
+    body[data-view="finale"] .finale__heart {
+        width: 62px;
+        height: 62px;
+        margin-bottom: 10px;
+    }
+
+    body[data-view="finale"] .finale__heart svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    body[data-view="finale"] .kicker {
+        display: none;
+    }
+
+    body[data-view="finale"] .title {
+        margin-bottom: 10px;
+        font-size: clamp(27px, 8vw, 34px);
+    }
+
+    body[data-view="finale"] .phrase {
+        margin-bottom: 12px;
+        padding: 14px;
+        font-size: 19px;
+    }
+
+    body[data-view="finale"] .gift-place {
+        margin-bottom: 14px;
+        padding: 11px 14px;
+    }
+
+    body[data-view="reward"] .reward__seal {
+        width: 46px;
+        height: 46px;
+        margin-bottom: 10px;
+    }
+
+    body[data-view="reward"] .reward__seal svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    body[data-view="reward"] .reward__label {
+        margin-bottom: 6px;
+    }
+
+    body[data-view="reward"] .title--level {
+        margin-bottom: 9px;
+        font-size: clamp(24px, 7.4vw, 31px);
+    }
+
+    body[data-view="reward"] .clue {
+        margin: 12px 0 14px;
+        padding: 16px 16px 14px;
+    }
+
+    body[data-view="reward"] .clue p {
+        font-size: 18.5px;
+        line-height: 1.3;
+    }
+
+    body[data-view="reward"] .clue .clue__note {
+        margin-top: 8px;
+    }
 }
 
 /* Очень низкие экраны: ужимаем интро, чтобы кнопка была видна без скролла */
@@ -1108,8 +1173,8 @@ body[data-view="intro"] .progress {
    убираем лишний текст, чтобы задание и игра помещались целиком */
 @media (max-height: 700px) {
     body[data-view="level"] .card {
-        padding-top: 18px;
-        padding-bottom: 16px;
+        padding-top: 16px;
+        padding-bottom: 14px;
     }
 
     body[data-view="level"] .kicker {
@@ -1117,26 +1182,26 @@ body[data-view="intro"] .progress {
     }
 
     body[data-view="level"] .level-head {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     body[data-view="level"] .level-count {
-        margin-bottom: 5px;
+        margin-bottom: 4px;
     }
 
     body[data-view="level"] .title--level {
-        margin-bottom: 7px;
+        margin-bottom: 5px;
         font-size: clamp(23px, 7vw, 29px);
     }
 
     body[data-view="level"] .lead {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         font-size: 12.5px;
-        line-height: 1.45;
+        line-height: 1.42;
     }
 
     body[data-view="level"] .game__status {
-        margin: 9px 0 0;
+        margin: 8px 0 0;
     }
 
     body[data-view="level"] .game__action {
@@ -1144,7 +1209,7 @@ body[data-view="intro"] .progress {
     }
 
     body[data-view="level"] .hint-toggle {
-        margin-top: 9px;
+        margin-top: 7px;
     }
 
     body[data-view="level"] .catch {
@@ -1156,8 +1221,8 @@ body[data-view="intro"] .progress {
    чтобы внизу была видна и подсказка */
 @media (max-height: 620px) {
     body[data-view="level"] .card {
-        padding-top: 12px;
-        padding-bottom: 10px;
+        padding-top: 10px;
+        padding-bottom: 8px;
     }
 
     body[data-view="level"] .title--level {
@@ -1165,17 +1230,63 @@ body[data-view="intro"] .progress {
     }
 
     body[data-view="level"] .lead {
-        margin-bottom: 8px;
-        font-size: 12px;
+        margin-bottom: 6px;
+        font-size: 11.8px;
+        line-height: 1.35;
     }
 
     body[data-view="level"] .game__status {
-        margin-top: 6px;
+        margin-top: 5px;
     }
 
     body[data-view="level"] .hint-toggle {
-        margin-top: 6px;
-        padding: 6px 12px;
+        margin-top: 4px;
+        padding: 5px 11px;
+    }
+
+    /* На самом маленьком экране форма ключа важнее повторной подсказки:
+       место поиска уже было на предыдущем шаге, его можно вернуть кнопкой. */
+    body[data-view="reward"] .keylock__where {
+        display: none;
+    }
+
+    body[data-view="reward"] .keylock {
+        margin-bottom: 10px;
+        padding: 12px 12px 11px;
+    }
+
+    body[data-view="reward"] .keylock__text {
+        margin-bottom: 8px;
+        font-size: 12.5px;
+    }
+
+    body[data-view="reward"] .keylock .form {
+        gap: 7px;
+    }
+
+    body[data-view="reward"] .keylock .field {
+        min-height: 46px;
+    }
+
+    body[data-view="reward"] .keylock .btn {
+        min-height: 46px;
+    }
+
+    body[data-view="reward"] .keylock__back {
+        margin-top: 0;
+    }
+
+    body[data-view="reward"] .reward--enter .title--level {
+        margin-bottom: 10px;
+    }
+
+    body[data-view="reward"] .keylock__ok {
+        margin: 10px 0 12px;
+        padding: 10px 12px;
+    }
+
+    body[data-view="reward"] .reward__seal {
+        display: none;
     }
 }
 

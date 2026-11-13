@@ -561,8 +561,8 @@
             '<p class="kicker">' + esc(QUEST.meta.finalKicker) + "</p>" +
             '<h1 class="title">' + esc(QUEST.meta.finalTitle) + "</h1>" +
             phraseBlock +
-            '<p class="final-message">' + esc(QUEST.meta.finalMessage) + "</p>" +
             giftBlock +
+            '<p class="final-message">' + esc(QUEST.meta.finalMessage) + "</p>" +
             '<p class="signature">' + esc(QUEST.meta.signature) + "</p>" +
             '<details class="clues">' +
                 "<summary>Все подсказки</summary>" +
