@@ -427,3 +427,46 @@
     background: linear-gradient(90deg, var(--gold), var(--rose));
     transition: width 0.3s var(--ease-out);
 }
+
+/* ---------- 6. Тихий тап — нажми, когда сердце вспыхнет ---------- */
+
+.game--tap {
+    display: grid;
+    place-items: center;
+    padding: 18px 0 8px;
+}
+
+.tap__stage {
+    width: 100%;
+    max-width: 220px;
+    height: 220px;
+    display: grid;
+    place-items: center;
+}
+
+.tap__heart {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    border: 1px solid rgba(42, 26, 43, 0.12);
+    background: radial-gradient(circle at 40% 35%, #ffd9e3, #ff9db4 55%, #e8567c 100%);
+    color: #fff;
+    font-size: 40px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: 0 12px 26px -12px rgba(232, 86, 124, 0.8);
+    touch-action: manipulation;
+    transition: transform 0.18s var(--ease-out), box-shadow 0.25s, background 0.25s;
+}
+
+.tap__heart:active {
+    transform: scale(0.94);
+}
+
+.tap__heart.is-lit {
+    background: radial-gradient(circle at 40% 35%, #fff8e6, var(--gold) 70%);
+    color: #5a3410;
+    box-shadow: 0 0 26px rgba(233, 184, 114, 0.8), 0 12px 26px -12px rgba(232, 86, 124, 0.8);
+}

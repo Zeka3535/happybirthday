@@ -42,15 +42,36 @@ window.Games = (function () {
         replay.hidden = true;
 
         const icons = ["✦", "❀", "☾", "♥"];
-        const steps = QU.clamp(level.steps || 4, 2, 6);
-        const sequence = [];
+        const rounds = Array.isArray(level.rounds) && level.rounds.length
+            ? level.rounds.map(function (value) { return QU.clamp(Number(value) || 2, 1, 6); })
+            : [QU.clamp(level.steps || 4, 2, 6)];
 
-        for (let i = 0; i < steps; i++) {
-            let next;
-            do {
-                next = Math.floor(Math.random() * icons.length);
-            } while (next === sequence[sequence.length - 1]);
-            sequence.push(next);
+        let roundIndex = 0;
+        let sequence = [];
+        let input = 0;
+        let showing = false;
+        let solved = false;
+        let timers = [];
+
+        function startRound() {
+            roundIndex = Math.min(roundIndex, rounds.length - 1);
+            const steps = rounds[roundIndex];
+            sequence = [];
+
+            for (let i = 0; i < steps; i++) {
+                let next;
+                do {
+                    next = Math.floor(Math.random() * icons.length);
+                } while (next === sequence[sequence.length - 1]);
+                sequence.push(next);
+            }
+
+            input = 0;
+            showing = true;
+            replay.hidden = true;
+            note.textContent = "Смотри…";
+            pad.classList.add("is-waiting");
+            pads.forEach(function (node) { node.classList.remove("is-lit"); });
         }
 
         const pads = icons.map(function (icon, index) {
@@ -59,11 +80,6 @@ window.Games = (function () {
             pad.appendChild(el);
             return el;
         });
-
-        let input = 0;
-        let showing = false;
-        let solved = false;
-        let timers = [];
 
         function later(fn, ms) {
             const id = window.setTimeout(function () {
@@ -141,12 +157,18 @@ window.Games = (function () {
             input += 1;
 
             if (input === sequence.length) {
-                solved = true;
-                showing = true;
-                clearTimers();
-                note.textContent = "Порядок совпал ✦";
-                pads.forEach(function (item) { item.classList.add("is-lit"); });
-                later(api.onSolve, 520);
+                if (roundIndex < rounds.length - 1) {
+                    roundIndex += 1;
+                    startRound();
+                    later(show, 520);
+                } else {
+                    solved = true;
+                    showing = true;
+                    clearTimers();
+                    note.textContent = "Порядок совпал ✦";
+                    pads.forEach(function (item) { item.classList.add("is-lit"); });
+                    later(api.onSolve, 520);
+                }
             }
         });
 
@@ -156,135 +178,13 @@ window.Games = (function () {
         root.appendChild(note);
         root.appendChild(replay);
 
+        startRound();
         later(show, 520);
         return root;
     }
 
     /* --------------------------------------------------------
-       2. Пятнашки 3×3
-       -------------------------------------------------------- */
-    function sliding(level, api) {
-        const root = h("div", "game game--slide");
-        const board = h("div", "slide");
-        const note = statusBar("Собери числа по порядку");
-        const again = button("game__action", "Перемешать заново");
-
-        const size = 3;
-        const total = size * size;
-        let order = [];
-        let empty = total - 1;
-        let solved = false;
-
-        const cells = [];
-
-        function neighbours(index) {
-            const row = Math.floor(index / size);
-            const col = index % size;
-            const list = [];
-            if (row > 0) list.push(index - size);
-            if (row < size - 1) list.push(index + size);
-            if (col > 0) list.push(index - 1);
-            if (col < size - 1) list.push(index + 1);
-            return list;
-        }
-
-        function isSolved() {
-            for (let i = 0; i < total - 1; i++) {
-                if (order[i] !== i + 1) return false;
-            }
-            return order[total - 1] === 0;
-        }
-
-        function scramble() {
-            if (solved) return;
-
-            do {
-                order = [];
-                for (let i = 1; i < total; i++) order.push(i);
-                order.push(0);
-                empty = total - 1;
-
-                let previous = -1;
-                for (let step = 0; step < 120; step++) {
-                    const options = neighbours(empty).filter(function (index) {
-                        return index !== previous;
-                    });
-                    const pick = options[Math.floor(Math.random() * options.length)];
-                    order[empty] = order[pick];
-                    order[pick] = 0;
-                    previous = empty;
-                    empty = pick;
-                }
-            } while (isSolved());
-
-            note.textContent = "Собери числа по порядку";
-            paint();
-        }
-
-        function paint() {
-            cells.forEach(function (cell, index) {
-                const value = order[index];
-                cell.textContent = value ? String(value) : "";
-                cell.classList.toggle("is-empty", value === 0);
-                cell.disabled = value === 0;
-                cell.setAttribute(
-                    "aria-label",
-                    value ? "Плитка " + value : "Пустая клетка"
-                );
-            });
-        }
-
-        function slide(index) {
-            if (solved || order[index] === 0) return;
-
-            const row = Math.floor(index / size);
-            const col = index % size;
-            const emptyRow = Math.floor(empty / size);
-            const emptyCol = empty % size;
-
-            if (Math.abs(row - emptyRow) + Math.abs(col - emptyCol) !== 1) {
-                return;
-            }
-
-            order[empty] = order[index];
-            order[index] = 0;
-            empty = index;
-
-            Sound.click();
-            QU.vibrate(8);
-            paint();
-
-            if (isSolved()) {
-                solved = true;
-                note.textContent = "Все числа на местах ✦";
-                board.classList.add("is-solved");
-                window.setTimeout(function () {
-                    if (root.isConnected) api.onSolve();
-                }, 520);
-            }
-        }
-
-        for (let index = 0; index < total; index++) {
-            (function (i) {
-                const cell = button("slide__tile", "", "Плитка");
-                cell.addEventListener("click", function () { slide(i); });
-                cells.push(cell);
-                board.appendChild(cell);
-            })(index);
-        }
-
-        again.addEventListener("click", scramble);
-
-        root.appendChild(board);
-        root.appendChild(note);
-        root.appendChild(again);
-
-        scramble();
-        return root;
-    }
-
-    /* --------------------------------------------------------
-       3. Кодовые диски — собери комбинацию
+       2. Кодовые диски — собери комбинацию
        -------------------------------------------------------- */
     function disks(level, api) {
         const root = h("div", "game game--disks");
@@ -373,7 +273,7 @@ window.Games = (function () {
     }
 
     /* --------------------------------------------------------
-       4. Созвездие — соедини звёзды по порядку
+       3. Созвездие — соедини звёзды по порядку
        -------------------------------------------------------- */
     function constellation(level, api) {
         const root = h("div", "game game--sky");
@@ -474,7 +374,7 @@ window.Games = (function () {
     }
 
     /* --------------------------------------------------------
-       5. Лабиринт — проведи сердечко к подарку
+       4. Лабиринт — проведи сердечко к подарку
        -------------------------------------------------------- */
     function maze(level, api) {
         const root = h("div", "game game--maze");
@@ -658,7 +558,7 @@ window.Games = (function () {
     }
 
     /* --------------------------------------------------------
-       6. Поймай звёзды
+       5. Поймай звёзды
        -------------------------------------------------------- */
     function stars(level, api) {
         const root = h("div", "game game--catch");
@@ -739,9 +639,83 @@ window.Games = (function () {
         return root;
     }
 
+    /* --------------------------------------------------------
+       6. Тихий тап — нажми, когда сердце вспыхнет
+       -------------------------------------------------------- */
+    function tap(level, api) {
+        const root = h("div", "game game--tap");
+        const stage = h("div", "tap__stage");
+        const note = statusBar("Нажми на сердце, когда оно вспыхнет");
+        const pulse = button("tap__heart", "♥", "Сердце");
+
+        let lit = false;
+        let waiting = true;
+        let solved = false;
+        let timers = [];
+
+        function later(fn, ms) {
+            const id = window.setTimeout(function () {
+                timers = timers.filter(function (item) { return item !== id; });
+                if (!root.isConnected) return;
+                fn();
+            }, ms);
+            timers.push(id);
+            return id;
+        }
+
+        function clearTimers() {
+            timers.forEach(window.clearTimeout);
+            timers = [];
+        }
+
+        function glow() {
+            lit = true;
+            waiting = false;
+            pulse.classList.add("is-lit");
+            Sound.flip();
+            QU.vibrate(8);
+            note.textContent = "Тапни!";
+        }
+
+        function start() {
+            clearTimers();
+            lit = false;
+            waiting = true;
+            solved = false;
+            pulse.classList.remove("is-lit");
+            note.textContent = "Сердце готовится…";
+            later(glow, 900 + Math.random() * 1300);
+        }
+
+        pulse.addEventListener("click", function () {
+            if (solved) return;
+
+            if (lit) {
+                solved = true;
+                clearTimers();
+                note.textContent = "Тап прошёл ✦";
+                Sound.success();
+                later(function () { api.onSolve(); }, 520);
+                return;
+            }
+
+            Sound.error();
+            QU.vibrate([20, 30, 20]);
+            api.shake();
+            note.textContent = "Слишком рано. Сделай тап, когда вспыхнет.";
+            start();
+        });
+
+        root.appendChild(stage);
+        stage.appendChild(pulse);
+        root.appendChild(note);
+        start();
+        return root;
+    }
+
     return {
         fireflies: fireflies,
-        sliding: sliding,
+        tap: tap,
         disks: disks,
         constellation: constellation,
         maze: maze,
