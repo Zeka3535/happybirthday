@@ -245,6 +245,31 @@
             font-weight: 500;
         }
 
+        .editor-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .editor-map__row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .editor-map input {
+            padding: 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            font-family: "Courier New", ui-monospace, monospace;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
         .editor textarea { min-height: 90px; resize: vertical; }
 
         @media (max-width: 620px) {
@@ -419,12 +444,35 @@
                 field("Подсказка к тайнику", "treasureNote", level.reward ? level.reward.note : "");
                 field("Подсказка к ключу", "keyHint", level.reward ? level.reward.keyHint : "");
                 field("Подсказка уровня", "hint", level.hint, true);
-                if (level.type === "maze") {
-                    field("Карта лабиринта", "grid", (level.grid || []).join("\n"), true);
-                }
 
                 card.appendChild(title);
                 card.appendChild(grid);
+
+                if (level.type === "maze") {
+                    const mapBox = document.createElement("div");
+                    mapBox.className = "editor-map";
+
+                    for (let rowIndex = 0; rowIndex < (level.grid || []).length; rowIndex++) {
+                        const rowLabel = document.createElement("label");
+                        rowLabel.className = "editor-map__row";
+                        const rowInput = document.createElement("input");
+                        rowInput.type = "text";
+                        rowInput.value = (level.grid || [])[rowIndex] || "";
+                        rowInput.setAttribute("maxlength", "12");
+                        rowInput.addEventListener("input", function () {
+                            const target = QUEST.levels[index];
+                            if (!target || !Array.isArray(target.grid)) target.grid = [];
+                            while (target.grid.length < rowIndex + 1) target.grid.push("");
+                            target.grid[rowIndex] = rowInput.value;
+                        });
+                        rowLabel.textContent = "Строка " + (rowIndex + 1) + ":";
+                        mapBox.appendChild(rowLabel);
+                        mapBox.appendChild(rowInput);
+                    }
+
+                    card.appendChild(mapBox);
+                }
+
                 editor.appendChild(card);
             });
 
