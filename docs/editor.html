@@ -419,6 +419,9 @@
                 field("Подсказка к тайнику", "treasureNote", level.reward ? level.reward.note : "");
                 field("Подсказка к ключу", "keyHint", level.reward ? level.reward.keyHint : "");
                 field("Подсказка уровня", "hint", level.hint, true);
+                if (level.type === "maze") {
+                    field("Карта лабиринта", "grid", (level.grid || []).join("\n"), true);
+                }
 
                 card.appendChild(title);
                 card.appendChild(grid);
@@ -428,7 +431,7 @@
             document.getElementById("exportBtn").addEventListener("click", function () {
                 const header = [
                     "level_id", "eyebrow", "title", "type",
-                    "key", "treasureTitle", "treasurePlace", "treasureNote", "keyHint", "hint"
+                    "key", "treasureTitle", "treasurePlace", "treasureNote", "keyHint", "hint", "grid"
                 ];
                 const lines = [header.join(",")];
 
@@ -444,7 +447,8 @@
                         reward.text || "",
                         reward.note || "",
                         reward.keyHint || "",
-                        level.hint || ""
+                        level.hint || "",
+                        (level.grid || []).join("\n") || ""
                     ].map(function (value) { return String(value == null ? "" : value); });
 
                     lines.push(row.map(function (value) {
@@ -490,6 +494,12 @@
                                 if (field === "treasureNote" && level.reward) level.reward.note = value;
                                 if (field === "keyHint" && level.reward) level.reward.keyHint = value;
                                 if (field === "hint") level.hint = value;
+                                if (field === "grid") {
+                                    level.grid = value
+                                        .split(/\r\n|\n|\r/)
+                                        .map(function (line) { return String(line); })
+                                        .filter(function (line) { return line.trim() !== ""; });
+                                }
                             }
                         }
                     };
