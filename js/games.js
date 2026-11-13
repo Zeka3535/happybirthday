@@ -640,7 +640,7 @@ window.Games = (function () {
     }
 
     /* --------------------------------------------------------
-       6. Тихий тап — нажми, когда сердце вспыхнет
+       6. Тихий тап — два тапа подряд
        -------------------------------------------------------- */
     function tap(level, api) {
         const root = h("div", "game game--tap");
@@ -651,6 +651,7 @@ window.Games = (function () {
         let lit = false;
         let waiting = true;
         let solved = false;
+        let tapStage = 0;
         let timers = [];
 
         function later(fn, ms) {
@@ -682,6 +683,7 @@ window.Games = (function () {
             lit = false;
             waiting = true;
             solved = false;
+            tapStage = 0;
             pulse.classList.remove("is-lit");
             note.textContent = "Сердце готовится…";
             later(glow, 900 + Math.random() * 1300);
@@ -691,11 +693,22 @@ window.Games = (function () {
             if (solved) return;
 
             if (lit) {
-                solved = true;
+                tapStage += 1;
                 clearTimers();
-                note.textContent = "Тап прошёл ✦";
-                Sound.success();
-                later(function () { api.onSolve(); }, 520);
+                lit = false;
+                pulse.classList.remove("is-lit");
+
+                if (tapStage >= 2) {
+                    solved = true;
+                    note.textContent = "Тап прошёл ✦";
+                    Sound.success();
+                    later(function () { api.onSolve(); }, 520);
+                    return;
+                }
+
+                waiting = true;
+                note.textContent = "Ещё одно…";
+                later(glow, 750);
                 return;
             }
 
