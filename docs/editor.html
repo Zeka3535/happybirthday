@@ -349,6 +349,8 @@
         <button type="button" id="printBtn">Печать</button>
         <button type="button" id="exportBtn">Экспорт CSV</button>
         <button type="button" id="importBtn">Импорт CSV</button>
+        <button type="button" id="exportPhrasesBtn">Экспорт фраз CSV</button>
+        <button type="button" id="importPhrasesBtn">Импорт фраз CSV</button>
     </div>
 
     <p class="notice" id="demoNotice" hidden>
@@ -529,6 +531,42 @@
                 editor.appendChild(card);
             });
 
+            const phraseEntries = (config && Array.isArray(config.phrases)) ? config.phrases : [];
+
+            phraseEntries.forEach(function (phrase, pIndex) {
+                const card = document.createElement("div");
+                card.className = "level-card";
+
+                const title = document.createElement("h3");
+                title.textContent = "Финальная фраза · " + (phrase.id || "final");
+
+                const grid = document.createElement("div");
+                grid.className = "grid";
+
+                function field(label, key, value, textarea) {
+                    const wrap = document.createElement("label");
+                    const input = document.createElement(textarea ? "textarea" : "input");
+                    if (!textarea) {
+                        input.type = "text";
+                    }
+                    input.value = value == null ? "" : String(value);
+                    input.setAttribute("data-field", key);
+                    if (textarea) {
+                        input.rows = 3;
+                    }
+                    wrap.appendChild(document.createTextNode(label + ": "));
+                    wrap.appendChild(input);
+                    grid.appendChild(wrap);
+                    return input;
+                }
+
+                field("Текст фразы", "finalText", phrase.text, true);
+
+                card.appendChild(title);
+                card.appendChild(grid);
+                editor.appendChild(card);
+            });
+
             document.getElementById("exportBtn").addEventListener("click", function () {
                 const header = [
                     "level_id", "eyebrow", "title", "type",
@@ -602,6 +640,53 @@
                                         .filter(function (line) { return line.trim() !== ""; });
                                 }
                             }
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+                input.click();
+            });
+
+            document.getElementById("exportPhrasesBtn").addEventListener("click", function () {
+                const lines = ["phrase_id,phrase_text"];
+
+                phraseEntries.forEach(function (phrase) {
+                    const row = [
+                        phrase.id || "final",
+                        phrase.text || ""
+                    ].map(function (value) { return String(value); });
+
+                    lines.push(row.map(function (value) {
+                        return /[",\n]/.test(value) ? '"' + value.replace(/"/g, '""') + '"' : value;
+                    }).join(","));
+                });
+
+                const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "phrases.csv";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            document.getElementById("importPhrasesBtn").addEventListener("click", function () {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".csv,text/csv";
+                input.addEventListener("change", function () {
+                    const file = input.files && input.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        const text = String(reader.result || "");
+                        const lines = text.split(/\r\n|\n|\r/).map(function (line) { return line.trim(); }).filter(function (line) { return line !== ""; });
+                        for (let i = 1; i < lines.length; i += 1) {
+                            const cells = lines[i].split(",");
+                            const id = (cells[0] || "").trim();
+                            const value = cells.slice(1).join(",").replace(/^"|"$/g, "").trim();
+                            const target = phraseEntries.filter(function (phrase) { return (phrase.id || "final") === id; })[0];
+                            if (target) target.text = value;
                         }
                     };
                     reader.readAsText(file);

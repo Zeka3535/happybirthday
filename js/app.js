@@ -38,6 +38,9 @@
         keys: []
     };
 
+    const PHRASE_CSV_URL = "phrases.csv";
+    let phrasesData = null;
+
     let toastTimer = null;
     let rewardStage = "clue";
 
@@ -517,6 +520,57 @@
     }
 
     /* --------------------------------------------------------
+       Финальная фраза (из phrases.csv)
+       -------------------------------------------------------- */
+
+    function parsePhrases(text) {
+        const rows = [];
+        const lines = String(text || "")
+            .split(/\r\n|\n|\r/)
+            .map(function (line) { return line.trim(); })
+            .filter(function (line) { return line !== ""; });
+
+        for (let i = 1; i < lines.length; i += 1) {
+            const cells = lines[i].split(",");
+            const id = (cells[0] || "").trim();
+            const value = cells.slice(1).join(",").replace(/^"|"$/g, "").trim();
+            if (!id) continue;
+
+            const existing = rows.filter(function (row) { return row.id === id; })[0];
+            if (existing) {
+                existing.text = value;
+            } else {
+                rows.push({ id: id, text: value });
+            }
+        }
+
+        return rows;
+    }
+
+    function finalPhraseText() {
+        const phrases = (typeof QUEST !== "undefined" && Array.isArray(QUEST.phrases)) ? QUEST.phrases : [];
+        const final = phrases.filter(function (phrase) { return phrase && phrase.id === "final"; })[0];
+        const text = (final && final.text) || (phrases[0] && phrases[0].text) || "";
+        const fromFile = (phrasesData && phrasesData.filter(function (row) { return row.id === "final"; })[0]) || null;
+        const value = text || (fromFile && fromFile.text) || "";
+
+        if (value) return value;
+
+        const words = QUEST.levels
+            .map(function (level) { return rewardKeys(level.reward)[0]; })
+            .filter(Boolean);
+        return words.join(" ");
+    }
+
+    function loadPhrases() {
+        return fetch(PHRASE_CSV_URL)
+            .then(function (response) { return response.ok ? response.text() : null; })
+            .then(function (text) { phrasesData = text ? parsePhrases(text) : null; })
+            .catch(function () { phrasesData = null; })
+            .then(function () { render(); });
+    }
+
+    /* --------------------------------------------------------
        Экран: финал
        -------------------------------------------------------- */
 
@@ -533,14 +587,12 @@
             );
         }).join("");
 
-        const words = QUEST.levels
-            .map(function (level) { return rewardKeys(level.reward)[0]; })
-            .filter(Boolean);
+        const finalPhrase = finalPhraseText();
 
-        const phraseBlock = words.length
+        const phraseBlock = finalPhrase
             ? '<div class="phrase">' +
                 "<small>" + esc(QUEST.meta.phraseLabel || "Из найденных слов") + "</small>" +
-                "«" + esc(words.join(" ")) + "»" +
+                "«" + esc(finalPhrase) + "»" +
               "</div>"
             : "";
 
@@ -725,6 +777,8 @@
         }, { once: true });
 
         FX.init();
+
+        loadPhrases();
 
         let resizeTimer = null;
         window.addEventListener("resize", function () {

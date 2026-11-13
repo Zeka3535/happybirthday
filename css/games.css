@@ -74,9 +74,14 @@
     transform: scale(0.96);
 }
 
+.fire__pad svg {
+    width: 46%;
+    height: 46%;
+    display: block;
+}
+
 .fire__pad.is-lit {
-    color: #ffffff;
-    background: radial-gradient(circle at 40% 35%, #ffe0ae, var(--gold) 44%, #d98a5e 100%);
+    background: radial-gradient(circle at 40% 35%, #fff6df, #ffe0ae 46%, #f3c27a 100%);
     box-shadow:
         0 0 26px rgba(233, 184, 114, 0.7),
         0 0 58px rgba(232, 86, 124, 0.32);
@@ -161,12 +166,19 @@
     border: 1px solid rgba(42, 26, 43, 0.1);
     border-radius: 20px;
     background: linear-gradient(160deg, #ffffff, #fdeff4);
+    color: var(--rose-deep);
     font-size: 34px;
     line-height: 1;
     cursor: pointer;
     box-shadow: inset 0 1px 0 #ffffff, 0 6px 16px rgba(42, 26, 43, 0.08);
-    transition: transform 0.1s, border-color 0.2s, box-shadow 0.25s;
+    transition: transform 0.1s, border-color 0.2s, box-shadow 0.25s, color 0.2s;
     touch-action: manipulation;
+}
+
+.disk__face svg {
+    width: 42px;
+    height: 42px;
+    display: block;
 }
 
 .disk__face:active {
@@ -175,7 +187,10 @@
 
 .disk__dots {
     display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    max-width: 56px;
 }
 
 .disk__dot {
@@ -325,6 +340,12 @@
     transition: background-color 0.15s, box-shadow 0.15s;
 }
 
+.maze__cell svg {
+    width: 68%;
+    height: 68%;
+    display: block;
+}
+
 .maze__cell.is-open {
     background: rgba(255, 255, 255, 0.78);
     box-shadow: inset 0 0 0 1px rgba(42, 26, 43, 0.05);
@@ -380,22 +401,25 @@
 
 .catch__star {
     position: absolute;
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     transform: translate(-50%, -50%);
     display: grid;
     place-items: center;
     padding: 0;
     border: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle at 38% 32%, #fffaf0, var(--gold) 72%);
-    color: #7a4a12;
-    font-size: 18px;
-    font-weight: 800;
+    border-radius: 0;
+    background: transparent;
     cursor: pointer;
-    box-shadow: 0 0 16px rgba(233, 184, 114, 0.75);
+    filter: drop-shadow(0 0 8px rgba(233, 184, 114, 0.85));
     animation: starIn 0.3s var(--ease-out) both;
     touch-action: manipulation;
+}
+
+.catch__star svg {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 .catch__star:active {
@@ -428,45 +452,94 @@
     transition: width 0.3s var(--ease-out);
 }
 
-/* ---------- 6. Тихий тап — нажми, когда сердце вспыхнет ---------- */
+/* ---------- 6. Пары — найди одинаковые карточки ---------- */
 
 .game--tap {
     display: grid;
     place-items: center;
-    padding: 18px 0 8px;
+    padding: 10px 0 4px;
 }
 
-.tap__stage {
+.tap__board {
+    display: grid;
+    grid-template-columns: repeat(var(--tap-cols, 5), 1fr);
+    gap: 7px;
     width: 100%;
-    max-width: 220px;
-    height: 220px;
-    display: grid;
-    place-items: center;
+    max-width: 340px;
+    margin: 0 auto;
+    perspective: 700px;
 }
 
-.tap__heart {
-    width: 92px;
-    height: 92px;
-    border-radius: 50%;
-    border: 1px solid rgba(42, 26, 43, 0.12);
-    background: radial-gradient(circle at 40% 35%, #ffd9e3, #ff9db4 55%, #e8567c 100%);
-    color: #fff;
-    font-size: 40px;
-    line-height: 1;
-    display: grid;
-    place-items: center;
+.tap__board--5 {
+    gap: 6px;
+    max-width: 360px;
+}
+
+.tap__card {
+    position: relative;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    background: transparent;
     cursor: pointer;
-    box-shadow: 0 12px 26px -12px rgba(232, 86, 124, 0.8);
     touch-action: manipulation;
-    transition: transform 0.18s var(--ease-out), box-shadow 0.25s, background 0.25s;
+    transform-style: preserve-3d;
+    transition: transform 0.42s var(--ease-out);
 }
 
-.tap__heart:active {
-    transform: scale(0.94);
+.tap__card:active:not(.is-open):not(.is-matched) {
+    transform: scale(0.96);
 }
 
-.tap__heart.is-lit {
-    background: radial-gradient(circle at 40% 35%, #fff8e6, var(--gold) 70%);
-    color: #5a3410;
-    box-shadow: 0 0 26px rgba(233, 184, 114, 0.8), 0 12px 26px -12px rgba(232, 86, 124, 0.8);
+.tap__face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    border: 1px solid rgba(42, 26, 43, 0.1);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 0 3px 10px rgba(42, 26, 43, 0.06), inset 0 1px 0 #ffffff;
+}
+
+.tap__face svg {
+    width: 62%;
+    height: 62%;
+    display: block;
+}
+
+.tap__card--quiet.is-matched .tap__face--front {
+    background: #fff;
+    box-shadow: 0 0 0 2px #d7b4ff, 0 0 14px rgba(181, 108, 255, 0.45);
+}
+
+.tap__face--back {
+    background: linear-gradient(150deg, #ffffff, #fdf1f5);
+    color: rgba(42, 26, 43, 0.18);
+}
+
+.tap__face--front {
+    background: #fffdfb;
+    transform: rotateY(180deg);
+}
+
+.tap__card.is-open,
+.tap__card.is-matched {
+    transform: rotateY(180deg);
+}
+
+.tap__card.is-matched .tap__face--front {
+    background: #fffdfb;
+    box-shadow: 0 0 0 2px var(--gold), 0 0 12px rgba(233, 184, 114, 0.45);
+}
+
+.tap__board.is-solved .tap__card.is-matched .tap__face--front {
+    box-shadow: 0 0 22px rgba(233, 184, 114, 0.7), 0 8px 18px rgba(42, 26, 43, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tap__card {
+        transition: none;
+    }
 }
