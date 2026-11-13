@@ -35,6 +35,7 @@ window.Games = (function () {
         sun: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="6.2" fill="#ffb020"/><g fill="none" stroke="#f08a00" stroke-width="2.4" stroke-linecap="round"><path d="M16 2.8v3.4M16 25.8v3.4M2.8 16h3.4M25.8 16h3.4"/><path d="M6.6 6.6l2.4 2.4M23 23l2.4 2.4M6.6 25.4 9 23M23 9l2.4-2.4"/></g></svg>',
         moon: '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#f3c14b" d="M20 5.2A10.2 10.2 0 1 0 26.6 21 8.4 8.4 0 0 1 20 5.2Z"/><circle cx="13" cy="12" r="1.1" fill="#fff6d2"/><circle cx="10.5" cy="16.5" r="0.7" fill="#fff6d2"/></svg>',
         star: '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#ffd24a" d="M16 3.2 19.2 12l9.2.6-7 5.8 2.2 8.8L16 22.2 8.4 27.2l2.2-8.8-7-5.8 9.2-.6Z"/><path fill="#fff3c4" d="M16 7.2 17.6 12h4.8l-3.8 3 1.4 4.6L16 16.8l-3.8 2.8 1.4-4.6-3.8-3h4.8Z"/></svg>',
+        starBad: '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#9aa3b5" d="M16 3.2 19.2 12l9.2.6-7 5.8 2.2 8.8L16 22.2 8.4 27.2l2.2-8.8-7-5.8 9.2-.6Z"/><path fill="#d5dbe6" d="M16 7.2 17.6 12h4.8l-3.8 3 1.4 4.6L16 16.8l-3.8 2.8 1.4-4.6-3.8-3h4.8Z"/></svg>',
         heart: '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#e8567c" d="M16 27S6 20.6 6 13.8A5.6 5.6 0 0 1 16 10a5.6 5.6 0 0 1 10 3.8C26 20.6 16 27 16 27Z"/><path fill="#ffd0dc" d="M12.2 13.2a2.2 2.2 0 0 1 2.4-1.6 3 3 0 0 1 .8 2.2 6 6 0 0 1-3.2-.6Z"/></svg>',
         flower: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="7.2" r="4.3" fill="#ff7aa2"/><circle cx="23.6" cy="12.6" r="4.3" fill="#ff8eb3"/><circle cx="20.6" cy="21.4" r="4.3" fill="#ff6b98"/><circle cx="11.4" cy="21.4" r="4.3" fill="#ff8eb3"/><circle cx="8.4" cy="12.6" r="4.3" fill="#ff7aa2"/><circle cx="16" cy="15.2" r="3.3" fill="#ffd24a"/></svg>',
         drop: '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#4aa3e8" d="M16 4.5c5 6.4 8.2 10.6 8.2 14.6a8.2 8.2 0 1 1-16.4 0C7.8 15.1 11 11 16 4.5Z"/><path fill="#d7f1ff" d="M12.2 16.5a3.2 3.2 0 0 1 3-2.6 2.2 2.2 0 0 1 .4 2.4 5 5 0 0 1-3.4.2Z"/></svg>',
@@ -253,6 +254,7 @@ window.Games = (function () {
         });
 
         const dialCount = Math.max(3, target.length);
+        if (dialCount > 3) wrap.classList.add("disks--4");
         const values = [];
 
         for (let i = 0; i < dialCount; i++) {
@@ -340,103 +342,112 @@ window.Games = (function () {
     }
 
     /* --------------------------------------------------------
-       3. Созвездие — соедини звёзды по порядку
+       3. Два неба — найди отличия
        -------------------------------------------------------- */
-    function constellation(level, api) {
-        const root = h("div", "game game--sky");
-        const sky = h("div", "sky");
-        const note = statusBar("Начни с первой звезды");
+    function skies(level, api) {
+        const root = h("div", "game game--skies");
+        const pair = h("div", "sky-pair");
+        const note = statusBar("Найди отличия");
 
-        const stars = (level.stars && level.stars.length) ? level.stars : [
-            { x: 50, y: 36 },
-            { x: 32, y: 22 },
-            { x: 14, y: 40 },
-            { x: 24, y: 64 },
-            { x: 50, y: 92 },
-            { x: 76, y: 64 },
-            { x: 86, y: 40 },
-            { x: 68, y: 22 }
+        const pictures = [
+            {
+                name: "Верхнее небо",
+                items: [
+                    { glyph: "moon", x: 22, y: 30, diff: "light", label: "Луна" },
+                    { glyph: "star", x: 50, y: 18, label: "Звезда" },
+                    { glyph: "star", x: 78, y: 32, label: "Звезда" },
+                    { glyph: "star", x: 64, y: 54, diff: "spark", label: "Звезда" },
+                    { glyph: "heart", x: 34, y: 52, diff: "heart", label: "Сердце" },
+                    { glyph: "flower", x: 18, y: 74, label: "Цветок" },
+                    { glyph: "crown", x: 82, y: 62, label: "Корона" },
+                    { glyph: "gift", x: 54, y: 78, diff: "gift", label: "Подарок" }
+                ]
+            },
+            {
+                name: "Нижнее небо",
+                items: [
+                    { glyph: "sun", x: 22, y: 30, diff: "light", label: "Солнце" },
+                    { glyph: "star", x: 50, y: 18, label: "Звезда" },
+                    { glyph: "star", x: 78, y: 32, label: "Звезда" },
+                    { glyph: "butterfly", x: 64, y: 54, diff: "spark", label: "Бабочка" },
+                    { glyph: "flower", x: 18, y: 74, label: "Цветок" },
+                    { glyph: "crown", x: 82, y: 62, label: "Корона" },
+                    { glyph: "gift", x: 42, y: 46, diff: "gift", label: "Подарок" }
+                ]
+            }
         ];
 
-        const svgNS = "http://www.w3.org/2000/svg";
-        const svg = document.createElementNS(svgNS, "svg");
-        const line = document.createElementNS(svgNS, "polyline");
-
-        svg.setAttribute("viewBox", "0 0 100 100");
-        svg.setAttribute("preserveAspectRatio", "none");
-        svg.setAttribute("aria-hidden", "true");
-        svg.classList.add("sky__lines");
-        line.setAttribute("points", "");
-        svg.appendChild(line);
-        sky.appendChild(svg);
-
-        let progress = 0;
+        const goal = pictures[0].items.filter(function (item) { return item.diff; }).length;
+        const found = {};
         let solved = false;
-        const nodes = [];
+        const marked = [];
 
-        function points(upTo) {
-            return stars.slice(0, upTo).map(function (star) {
-                return star.x + "," + star.y;
-            }).join(" ");
+        function paintFound() {
+            marked.forEach(function (node) {
+                node.classList.toggle("is-found", Boolean(found[node.dataset.diff]));
+            });
         }
 
-        function reset() {
-            progress = 0;
-            line.setAttribute("points", "");
-            nodes.forEach(function (node) { node.classList.remove("is-lit"); });
-            note.textContent = "Начни с первой звезды";
+        function finish() {
+            solved = true;
+            note.textContent = "Оба неба прочитаны ✦";
+            Sound.success();
+            window.setTimeout(function () {
+                if (root.isConnected) api.onSolve();
+            }, 700);
         }
 
-        stars.forEach(function (star, index) {
-            const node = button("sky__star", String(index + 1), "Звезда " + (index + 1));
-            node.style.left = star.x + "%";
-            node.style.top = star.y + "%";
+        pictures.forEach(function (picture) {
+            const wrap = h("div", "sky-pane-wrap");
+            const pane = h("div", "sky-pane");
+            const caption = h("span", "sky-pane__name", picture.name);
+            wrap.appendChild(caption);
 
-            node.addEventListener("click", function () {
-                if (solved) return;
-
-                if (index !== progress) {
-                    if (index < progress) return;
-                    Sound.error();
-                    QU.vibrate([20, 30, 20]);
-                    api.shake();
-                    reset();
-                    return;
+            picture.items.forEach(function (item) {
+                const node = button("sky-spot", null, item.label);
+                node.style.left = item.x + "%";
+                node.style.top = item.y + "%";
+                node.innerHTML = GLYPH[item.glyph] || GLYPH.star;
+                if (item.diff) {
+                    node.dataset.diff = item.diff;
+                    marked.push(node);
                 }
 
-                progress += 1;
-                node.classList.add("is-lit");
-                Sound.flip();
-                QU.vibrate(10);
+                node.addEventListener("click", function () {
+                    if (solved) return;
 
-                line.setAttribute("points", points(progress));
-                note.textContent = "Звёзд соединено: " + progress + " из " + stars.length;
-
-                if (progress === stars.length) {
-                    solved = true;
-
-                    if (level.close !== false) {
-                        line.setAttribute(
-                            "points",
-                            points(stars.length) + " " + stars[0].x + "," + stars[0].y
-                        );
+                    if (!item.diff) {
+                        Sound.error();
+                        QU.vibrate([16, 24, 16]);
+                        api.shake();
+                        note.textContent = "Это есть на обоих небесах";
+                        return;
                     }
 
-                    sky.classList.add("is-done");
-                    note.textContent = "Созвездие собрано ✦";
+                    if (found[item.diff]) return;
+                    found[item.diff] = true;
+                    Sound.flip();
+                    QU.vibrate(10);
+                    paintFound();
 
-                    window.setTimeout(function () {
-                        if (root.isConnected) api.onSolve();
-                    }, 820);
-                }
+                    const count = Object.keys(found).length;
+                    note.textContent = count >= goal
+                        ? "Оба неба прочитаны ✦"
+                        : "Найдено " + count + " из " + goal;
+
+                    if (count >= goal) finish();
+                });
+
+                pane.appendChild(node);
             });
 
-            nodes.push(node);
-            sky.appendChild(node);
+            wrap.appendChild(pane);
+            pair.appendChild(wrap);
         });
 
-        root.appendChild(sky);
+        root.appendChild(pair);
         root.appendChild(note);
+        note.textContent = "Найдено 0 из " + goal;
         return root;
     }
 
@@ -635,9 +646,9 @@ window.Games = (function () {
         const fill = h("span");
         meter.appendChild(fill);
 
-        const goal = QU.clamp(level.goal || 7, 3, 15);
-        const life = REDUCED() ? 2300 : 1500;
-        const gap = REDUCED() ? 1000 : 620;
+        const goal = QU.clamp(level.goal || 12, 3, 20);
+        const life = REDUCED() ? 2000 : 1150;
+        const gap = REDUCED() ? 1100 : 700;
 
         let caught = 0;
         let solved = false;
@@ -665,10 +676,21 @@ window.Games = (function () {
             fill.style.width = Math.min(100, (caught / goal) * 100) + "%";
         }
 
-        function catchStar(star) {
+        function catchStar(star, bad) {
             if (solved) return;
 
             star.remove();
+
+            if (bad) {
+                caught = Math.max(0, caught - 1);
+                Sound.error();
+                QU.vibrate([18, 28, 18]);
+                api.shake();
+                note.textContent = "Серая забрала одну · " + caught + " из " + goal;
+                fill.style.width = Math.min(100, (caught / goal) * 100) + "%";
+                return;
+            }
+
             caught += 1;
             Sound.click();
             QU.vibrate(12);
@@ -684,18 +706,33 @@ window.Games = (function () {
             }
         }
 
-        function spawn() {
+        function spawn(bad) {
             if (solved || !root.isConnected) return;
 
-            const star = button("catch__star", null, "Звёздочка");
-            star.innerHTML = GLYPH.star;
+            const star = button(
+                "catch__star" + (bad ? " is-bad" : ""),
+                null,
+                bad ? "Серая звезда" : "Золотая звезда"
+            );
+            star.innerHTML = bad ? GLYPH.starBad : GLYPH.star;
             star.style.left = (10 + Math.random() * 80) + "%";
             star.style.top = (14 + Math.random() * 70) + "%";
-            star.addEventListener("click", function () { catchStar(star); });
+            star.addEventListener("click", function () { catchStar(star, bad); });
             arena.appendChild(star);
 
-            later(function () { star.remove(); }, life);
-            later(spawn, gap);
+            later(function () { star.remove(); }, bad ? life + 350 : life);
+        }
+
+        function loopGood() {
+            if (solved || !root.isConnected) return;
+            spawn(false);
+            later(loopGood, gap);
+        }
+
+        function loopBad() {
+            if (solved || !root.isConnected) return;
+            spawn(true);
+            later(loopBad, gap * 2);
         }
 
         root.appendChild(arena);
@@ -703,7 +740,8 @@ window.Games = (function () {
         root.appendChild(meter);
 
         update();
-        later(spawn, 500);
+        later(loopGood, 420);
+        later(loopBad, gap * 2);
         return root;
     }
 
@@ -906,7 +944,8 @@ window.Games = (function () {
         fireflies: fireflies,
         tap: tap,
         disks: disks,
-        constellation: constellation,
+        skies: skies,
+        constellation: skies,
         maze: maze,
         stars: stars
     };

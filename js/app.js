@@ -596,20 +596,21 @@
               "</div>"
             : "";
 
-        const giftBlock = QUEST.meta.giftPlace
-            ? '<div class="gift-place">' +
-                "<b>" + esc(QUEST.meta.giftLabel || "Подарок ждёт") + "</b>" +
-                esc(QUEST.meta.giftPlace) +
-              "</div>"
-            : "";
+        const giftMark = "Твой подарок ждёт там, где рождается музыка: под крышкой клавиш инструмента";
+        const message = QUEST.meta.finalMessage || "";
+        const markAt = message.indexOf(giftMark);
+        const messageHtml = markAt === -1
+            ? esc(message)
+            : esc(message.slice(0, markAt)) +
+                "<strong>" + esc(giftMark) + "</strong>" +
+                esc(message.slice(markAt + giftMark.length));
 
         card.innerHTML =
             '<div class="finale__heart">' + HEART_FILLED + "</div>" +
             '<p class="kicker">' + esc(QUEST.meta.finalKicker) + "</p>" +
             '<h1 class="title">' + esc(QUEST.meta.finalTitle) + "</h1>" +
             phraseBlock +
-            giftBlock +
-            '<p class="final-message">' + esc(QUEST.meta.finalMessage) + "</p>" +
+            '<p class="final-message">' + messageHtml + "</p>" +
             '<p class="signature">' + esc(QUEST.meta.signature) + "</p>" +
             '<details class="clues">' +
                 "<summary>Все подсказки</summary>" +

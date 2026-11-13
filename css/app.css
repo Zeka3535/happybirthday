@@ -854,6 +854,11 @@ body[data-view="intro"] .progress {
     color: var(--ink);
 }
 
+.final-message strong {
+    font-family: var(--font-body);
+    font-weight: 800;
+}
+
 .signature {
     margin: 0 0 24px;
     font-family: var(--font-display);
