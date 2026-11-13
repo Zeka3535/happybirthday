@@ -1,0 +1,215 @@
+/* ============================================================
+   Тема 2026: ночное небо, тёплая бумага, розовое золото
+   ============================================================ */
+
+:root {
+    /* Фон */
+    --night-0: #0b0714;
+    --night-1: #130d22;
+    --night-2: #1d1230;
+    --night-3: #2a1740;
+
+    /* Светлая карточка */
+    --cream: #fff8f1;
+    --cream-2: #fbeadf;
+    --ink: #2a1a2b;
+    --ink-soft: #6b5566;
+
+    /* Акценты */
+    --rose: #e8567c;
+    --rose-deep: #b92f5b;
+    --gold: #e9b872;
+    --gold-deep: #a06419;
+    --mint: #8fd3c7;
+
+    /* Типографика */
+    --font-display: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+    --font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
+    /* Геометрия */
+    --radius-card: 28px;
+    --radius-control: 16px;
+
+    --ease-out: cubic-bezier(.2, .8, .2, 1);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: var(--font-body);
+    color: var(--cream);
+    background:
+        radial-gradient(120% 80% at 50% -10%, #2a1747 0%, transparent 55%),
+        radial-gradient(90% 60% at 100% 100%, #3a1a3a 0%, transparent 60%),
+        linear-gradient(180deg, var(--night-1) 0%, var(--night-0) 100%);
+    background-color: var(--night-0);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 40%, transparent 45%, rgba(5, 3, 10, 0.55) 100%);
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+    color: inherit;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+h1, h2, h3, p {
+    margin-top: 0;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+::selection {
+    background: rgba(232, 86, 124, 0.28);
+}
+
+/* ---------- Фон: звёзды и сияние ---------- */
+
+#stars,
+#fx {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#stars {
+    z-index: 0;
+    opacity: 0.85;
+}
+
+#fx {
+    z-index: 30;
+}
+
+.aurora {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    filter: saturate(0.9);
+}
+
+.aurora__blob {
+    position: absolute;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.4;
+    will-change: transform;
+}
+
+.aurora__blob--1 {
+    top: -28vmax;
+    left: -24vmax;
+    background: radial-gradient(circle, rgba(105, 62, 160, 0.75) 0%, transparent 68%);
+    animation: drift1 26s ease-in-out infinite alternate;
+}
+
+.aurora__blob--2 {
+    top: 26vh;
+    right: -30vmax;
+    background: radial-gradient(circle, rgba(185, 47, 91, 0.5) 0%, transparent 66%);
+    animation: drift2 32s ease-in-out infinite alternate;
+}
+
+.aurora__blob--3 {
+    bottom: -34vmax;
+    left: 8vmax;
+    background: radial-gradient(circle, rgba(52, 120, 118, 0.32) 0%, transparent 68%);
+    animation: drift3 38s ease-in-out infinite alternate;
+}
+
+@keyframes drift1 {
+    to { transform: translate3d(10vmax, 8vmax, 0) scale(1.12); }
+}
+@keyframes drift2 {
+    to { transform: translate3d(-12vmax, -6vmax, 0) scale(1.08); }
+}
+@keyframes drift3 {
+    to { transform: translate3d(6vmax, -10vmax, 0) scale(1.15); }
+}
+
+/* ---------- Служебное ---------- */
+
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.noscript {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    text-align: center;
+    background: var(--night-0);
+    font-size: 16px;
+}
+
+/* ---------- Доступность: меньше движения ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
