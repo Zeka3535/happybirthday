@@ -159,17 +159,12 @@
         );
 
         const card = h("section", "card");
-        const pills = (QUEST.meta.metaPills || []).map(function (pill) {
-            return '<span class="meta-pill">' + esc(pill) + "</span>";
-        }).join("");
-
         card.innerHTML =
             '<div class="hero">' +
                 '<div class="hero__seal">' + HEART_SVG + "</div>" +
                 '<p class="kicker">' + esc(QUEST.meta.heroKicker) + "</p>" +
                 '<h1 class="title">' + QUEST.meta.heroTitle + "</h1>" +
-                '<p class="lead">' + esc(QUEST.meta.heroText) + "</p>" +
-                (pills ? '<div class="meta-row">' + pills + "</div>" : "") +
+                (QUEST.meta.heroText ? '<p class="lead">' + esc(QUEST.meta.heroText) + "</p>" : "") +
                 '<button type="button" class="btn btn--primary" data-action="start">' +
                     esc(QUEST.meta.startLabel) +
                 "</button>" +
@@ -179,7 +174,7 @@
                         " · глава " + (saved.index + 1) +
                       "</button>"
                     : "") +
-                '<p class="fineprint">' + esc(QUEST.meta.fineprint) + "</p>" +
+                (QUEST.meta.fineprint ? '<p class="fineprint">' + esc(QUEST.meta.fineprint) + "</p>" : "") +
             "</div>";
 
         card.addEventListener("click", function (event) {
