@@ -1,17 +1,11 @@
 /* ============================================================
-   Игровые механики
-   Каждая игра возвращает DOM-элемент и вызывает api.onSolve()
-   при успехе.
+   Игровые механики · версия 2026.2
+   Шесть новых игр. Каждая возвращает DOM-элемент и вызывает
+   api.onSolve() при успехе.
    ============================================================ */
 
 window.Games = (function () {
     "use strict";
-
-    const WIN_LINES = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-    ];
 
     function h(tag, className, text) {
         const node = document.createElement(tag);
@@ -27,633 +21,730 @@ window.Games = (function () {
         return node;
     }
 
+    function statusBar(text) {
+        const node = h("p", "game__status", text);
+        node.setAttribute("aria-live", "polite");
+        return node;
+    }
+
+    const REDUCED = function () {
+        return QU.prefersReducedMotion();
+    };
+
     /* --------------------------------------------------------
-       Вопрос с текстовым ответом
+       1. Огоньки — повтори последовательность
        -------------------------------------------------------- */
-    function quiz(level, api) {
-        const root = h("div", "game game--quiz");
-        const form = h("form", "form");
-        const input = document.createElement("input");
+    function fireflies(level, api) {
+        const root = h("div", "game game--fireflies");
+        const pad = h("div", "fire");
+        const note = statusBar("Приготовься…");
+        const replay = button("game__action", "Показать ещё раз");
+        replay.hidden = true;
 
-        input.type = "text";
-        input.className = "field";
-        input.placeholder = level.placeholder || "Твой ответ";
-        input.autocomplete = "off";
-        input.autocapitalize = "off";
-        input.spellcheck = false;
-        input.setAttribute("enterkeyhint", "done");
-        input.setAttribute("aria-label", level.placeholder || "Ответ");
+        const icons = ["✦", "❀", "☾", "♥"];
+        const steps = QU.clamp(level.steps || 4, 2, 6);
+        const sequence = [];
 
-        const error = h("p", "error");
-        error.setAttribute("aria-live", "polite");
+        for (let i = 0; i < steps; i++) {
+            let next;
+            do {
+                next = Math.floor(Math.random() * icons.length);
+            } while (next === sequence[sequence.length - 1]);
+            sequence.push(next);
+        }
 
-        const submit = h("button", "btn btn--primary", "Проверить");
-        submit.type = "submit";
+        const pads = icons.map(function (icon, index) {
+            const el = button("fire__pad", icon, "Огонёк " + (index + 1));
+            el.dataset.index = String(index);
+            pad.appendChild(el);
+            return el;
+        });
 
-        form.appendChild(input);
-        form.appendChild(error);
-        form.appendChild(submit);
-        root.appendChild(form);
-
-        let attempts = 0;
+        let input = 0;
+        let showing = false;
         let solved = false;
+        let timers = [];
 
-        form.addEventListener("submit", function (event) {
-            event.preventDefault();
-            if (solved) return;
+        function later(fn, ms) {
+            const id = window.setTimeout(function () {
+                timers = timers.filter(function (item) { return item !== id; });
+                if (!root.isConnected) return;
+                fn();
+            }, ms);
+            timers.push(id);
+            return id;
+        }
 
-            const value = input.value;
-            if (!value.trim()) {
-                error.textContent = "Напиши хотя бы слово ✦";
-                return;
-            }
+        function clearTimers() {
+            timers.forEach(window.clearTimeout);
+            timers = [];
+        }
 
-            const given = QU.normalize(value);
-            const answers = (level.answers || []).map(QU.normalize);
+        function flash(node, ms) {
+            node.classList.add("is-lit");
+            window.setTimeout(function () {
+                node.classList.remove("is-lit");
+            }, ms);
+        }
 
-            if (answers.indexOf(given) !== -1) {
-                solved = true;
-                input.disabled = true;
-                submit.disabled = true;
-                submit.textContent = "Верно ✦";
-                error.textContent = "";
-                api.onSolve();
-                return;
-            }
+        function show() {
+            if (solved || !root.isConnected) return;
 
-            attempts += 1;
+            clearTimers();
+            showing = true;
+            input = 0;
+            replay.hidden = true;
+            note.textContent = "Смотри…";
+            pad.classList.add("is-waiting");
+            pads.forEach(function (node) { node.classList.remove("is-lit"); });
+
+            sequence.forEach(function (index, order) {
+                later(function () {
+                    flash(pads[index], 470);
+                    Sound.flip();
+                }, 320 + order * 760);
+            });
+
+            later(function () {
+                showing = false;
+                pad.classList.remove("is-waiting");
+                note.textContent = "Повтори порядок";
+            }, 320 + sequence.length * 760);
+        }
+
+        function fail() {
+            input = 0;
+            showing = true;
+            replay.hidden = true;
             Sound.error();
             QU.vibrate([25, 35, 25]);
             api.shake();
-
-            if (attempts >= 2) {
-                error.textContent = "Пока не то. Загляни в подсказку ниже.";
-                if (attempts === 3) api.revealHint();
-            } else {
-                error.textContent = "Не то. Попробуй ещё раз.";
-            }
-
-            input.select();
-        });
-
-        if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
-            window.setTimeout(function () {
-                input.focus({ preventScroll: true });
-            }, 350);
+            note.textContent = "Не то. Смотри ещё раз.";
+            pad.classList.add("is-waiting");
+            later(show, 780);
         }
 
-        return root;
-    }
+        pad.addEventListener("click", function (event) {
+            const node = event.target.closest(".fire__pad");
+            if (!node || showing || solved) return;
 
-    /* --------------------------------------------------------
-       Кодовый замок
-       -------------------------------------------------------- */
-    function lock(level, api) {
-        const root = h("div", "game game--lock");
-        const code = String(level.code || "").replace(/\D/g, "");
-        const dots = h("div", "lock__dots");
-        const pad = h("div", "keypad");
+            const index = Number(node.dataset.index);
+            flash(node, 200);
+            Sound.click();
+            QU.vibrate(10);
 
-        let value = "";
-        let solved = false;
-
-        dots.setAttribute("role", "status");
-        dots.setAttribute("aria-label", "Введено цифр: 0 из " + code.length);
-
-        for (let i = 0; i < code.length; i++) {
-            dots.appendChild(h("span", "lock__dot"));
-        }
-
-        function paint() {
-            QU.$$(".lock__dot", dots).forEach(function (dot, index) {
-                dot.textContent = value[index] || "";
-                dot.classList.toggle("is-filled", Boolean(value[index]));
-            });
-            dots.setAttribute(
-                "aria-label",
-                "Введено цифр: " + value.length + " из " + code.length
-            );
-        }
-
-        function check() {
-            if (value === code) {
-                solved = true;
-                api.onSolve();
+            if (sequence[input] !== index) {
+                fail();
                 return;
             }
 
-            Sound.error();
-            QU.vibrate([30, 40, 30]);
-            api.shake();
-            root.classList.add("shake");
+            input += 1;
 
-            window.setTimeout(function () {
-                value = "";
-                paint();
-                root.classList.remove("shake");
-            }, 430);
-        }
-
-        function press(digit) {
-            if (solved || value.length >= code.length) return;
-            value += digit;
-            Sound.click();
-            paint();
-            if (value.length === code.length) {
-                window.setTimeout(check, 140);
+            if (input === sequence.length) {
+                solved = true;
+                showing = true;
+                clearTimers();
+                note.textContent = "Порядок совпал ✦";
+                pads.forEach(function (item) { item.classList.add("is-lit"); });
+                later(api.onSolve, 520);
             }
-        }
-
-        for (let digit = 1; digit <= 9; digit++) {
-            (function (d) {
-                const key = h("button", "key", String(d));
-                key.type = "button";
-                key.setAttribute("aria-label", "Цифра " + d);
-                key.addEventListener("click", function () { press(String(d)); });
-                pad.appendChild(key);
-            })(digit);
-        }
-
-        const clear = h("button", "key key--ghost", "Сброс");
-        clear.type = "button";
-        clear.setAttribute("aria-label", "Сбросить код");
-        clear.addEventListener("click", function () {
-            if (solved) return;
-            value = "";
-            Sound.click();
-            paint();
         });
-        pad.appendChild(clear);
 
-        const zero = h("button", "key", "0");
-        zero.type = "button";
-        zero.setAttribute("aria-label", "Цифра 0");
-        zero.addEventListener("click", function () { press("0"); });
-        pad.appendChild(zero);
+        replay.addEventListener("click", show);
 
-        const back = h("button", "key key--ghost", "⌫");
-        back.type = "button";
-        back.setAttribute("aria-label", "Удалить последнюю цифру");
-        back.addEventListener("click", function () {
-            if (solved) return;
-            value = value.slice(0, -1);
-            Sound.click();
-            paint();
-        });
-        pad.appendChild(back);
-
-        root.appendChild(dots);
         root.appendChild(pad);
-        paint();
+        root.appendChild(note);
+        root.appendChild(replay);
 
+        later(show, 520);
         return root;
     }
 
     /* --------------------------------------------------------
-       Найди пары
+       2. Пятнашки 3×3
        -------------------------------------------------------- */
-    function memory(level, api) {
-        const root = h("div", "game game--memory");
-        const grid = h("div", "memory");
-        const pairs = level.pairs || [];
+    function sliding(level, api) {
+        const root = h("div", "game game--slide");
+        const board = h("div", "slide");
+        const note = statusBar("Собери числа по порядку");
+        const again = button("game__action", "Перемешать заново");
 
-        root.appendChild(grid);
-        grid.setAttribute("role", "group");
-        grid.setAttribute("aria-label", "Игра «найди пары»");
-
-        const cards = [];
-
-        pairs.forEach(function (pair) {
-            for (let copy = 0; copy < 2; copy++) {
-                cards.push({ pair: pair, copy: copy });
-            }
-        });
-
-        let first = null;
-        let second = null;
-        let locked = false;
-        let matched = 0;
-
-        function unflip(card) {
-            card.classList.remove("is-flipped");
-            card.setAttribute("aria-label", "Закрытая карточка");
-        }
-
-        function makeCard(entry) {
-            const card = button("mem", null, "Закрытая карточка");
-            const inner = h("span", "mem__inner");
-            const back = h("span", "mem__face mem__face--back", "✦");
-            const front = h("span", "mem__face mem__face--front");
-
-            back.setAttribute("aria-hidden", "true");
-            front.setAttribute("aria-hidden", "true");
-
-            if (entry.pair.image) {
-                const img = document.createElement("img");
-                img.src = entry.pair.image;
-                img.alt = "";
-                img.loading = "lazy";
-                front.appendChild(img);
-            } else {
-                front.textContent = entry.pair.emoji || "✦";
-            }
-
-            card.dataset.pair = entry.pair.id || entry.pair.label || String(pairs.indexOf(entry.pair));
-            card.dataset.label = entry.pair.label || "";
-
-            inner.appendChild(back);
-            inner.appendChild(front);
-            card.appendChild(inner);
-
-            card.addEventListener("click", function () {
-                if (locked || card.classList.contains("is-flipped")) return;
-                if (card.classList.contains("is-matched")) return;
-
-                card.classList.add("is-flipped");
-                card.setAttribute("aria-label", "Карточка: " + (entry.pair.label || "открыта"));
-                Sound.flip();
-
-                if (!first) {
-                    first = card;
-                    return;
-                }
-
-                second = card;
-                locked = true;
-
-                if (first.dataset.pair === second.dataset.pair) {
-                    matched += 1;
-                    const a = first;
-                    const b = second;
-
-                    window.setTimeout(function () {
-                        a.classList.add("is-matched");
-                        b.classList.add("is-matched");
-                        a.disabled = true;
-                        b.disabled = true;
-                        first = null;
-                        second = null;
-                        locked = false;
-
-                        if (matched === pairs.length) {
-                            window.setTimeout(function () {
-                                api.onSolve();
-                            }, 520);
-                        }
-                    }, 420);
-                } else {
-                    QU.vibrate(18);
-                    window.setTimeout(function () {
-                        if (!first || !second) return;
-                        unflip(first);
-                        unflip(second);
-                        first = null;
-                        second = null;
-                        locked = false;
-                    }, 900);
-                }
-            });
-
-            return card;
-        }
-
-        QU.shuffle(cards).forEach(function (entry) {
-            grid.appendChild(makeCard(entry));
-        });
-
-        return root;
-    }
-
-    /* --------------------------------------------------------
-       Собери слово из букв
-       -------------------------------------------------------- */
-    function word(level, api) {
-        const root = h("div", "game game--word");
-        const target = String(level.word || "").toUpperCase().replace(/[^А-ЯЁA-Z]/g, "");
-        const tiles = target.split("").map(function (char, index) {
-            return { id: index, char: char };
-        });
-
-        const slotsEl = h("div", "word__slots");
-        const keysEl = h("div", "word__keys");
-        const actions = h("div", "word__actions");
-
-        const backspace = button("word__action", "⌫ Стереть", "Стереть последнюю букву");
-        const shuffleBtn = button("word__action", "⇄ Перемешать", "Перемешать буквы");
-
-        actions.appendChild(backspace);
-        actions.appendChild(shuffleBtn);
-        root.appendChild(slotsEl);
-        root.appendChild(keysEl);
-        root.appendChild(actions);
-
-        let order = QU.shuffle(tiles);
-        let slots = new Array(target.length).fill(null);
-        let locked = false;
+        const size = 3;
+        const total = size * size;
+        let order = [];
+        let empty = total - 1;
         let solved = false;
 
-        function isUsed(tileId) {
-            return slots.indexOf(tileId) !== -1;
+        const cells = [];
+
+        function neighbours(index) {
+            const row = Math.floor(index / size);
+            const col = index % size;
+            const list = [];
+            if (row > 0) list.push(index - size);
+            if (row < size - 1) list.push(index + size);
+            if (col > 0) list.push(index - 1);
+            if (col < size - 1) list.push(index + 1);
+            return list;
         }
 
-        function renderSlots() {
-            slotsEl.innerHTML = "";
-            slots.forEach(function (tileId, index) {
-                const tile = tileId == null ? null : tiles[tileId];
-                const slot = button(
-                    "word__slot" + (tile ? " is-filled" : ""),
-                    tile ? tile.char : "",
-                    tile ? "Убрать букву " + tile.char : "Пустая клетка " + (index + 1)
-                );
-                slot.dataset.index = String(index);
-                slotsEl.appendChild(slot);
-            });
-        }
-
-        function renderKeys() {
-            keysEl.innerHTML = "";
-            order.forEach(function (tile) {
-                const key = button("word__key", tile.char, "Буква " + tile.char);
-                key.dataset.tile = String(tile.id);
-                key.disabled = solved || isUsed(tile.id);
-                keysEl.appendChild(key);
-            });
-        }
-
-        function render() {
-            renderSlots();
-            renderKeys();
-        }
-
-        function validate() {
-            const guess = slots.map(function (id) {
-                return tiles[id].char;
-            }).join("");
-
-            if (guess === target) {
-                solved = true;
-                locked = true;
-                render();
-                api.onSolve();
-                return;
+        function isSolved() {
+            for (let i = 0; i < total - 1; i++) {
+                if (order[i] !== i + 1) return false;
             }
-
-            Sound.error();
-            QU.vibrate([30, 40, 30]);
-            api.shake();
-            root.classList.add("shake");
-
-            locked = true;
-            window.setTimeout(function () {
-                slots = new Array(target.length).fill(null);
-                locked = false;
-                root.classList.remove("shake");
-                render();
-            }, 560);
+            return order[total - 1] === 0;
         }
 
-        function place(tileId) {
-            if (locked || solved || isUsed(tileId)) return;
+        function scramble() {
+            if (solved) return;
 
-            const empty = slots.indexOf(null);
-            if (empty === -1) return;
+            do {
+                order = [];
+                for (let i = 1; i < total; i++) order.push(i);
+                order.push(0);
+                empty = total - 1;
 
-            slots[empty] = tileId;
-            Sound.click();
-            render();
-
-            if (slots.indexOf(null) === -1) {
-                locked = true;
-                window.setTimeout(validate, 180);
-            }
-        }
-
-        function removeAt(index) {
-            if (locked || solved || slots[index] == null) return;
-            slots[index] = null;
-            Sound.click();
-            render();
-        }
-
-        slotsEl.addEventListener("click", function (event) {
-            const slot = event.target.closest(".word__slot");
-            if (!slot) return;
-            removeAt(Number(slot.dataset.index));
-        });
-
-        keysEl.addEventListener("click", function (event) {
-            const key = event.target.closest(".word__key");
-            if (!key || key.disabled) return;
-            place(Number(key.dataset.tile));
-        });
-
-        backspace.addEventListener("click", function () {
-            if (locked || solved) return;
-            for (let i = slots.length - 1; i >= 0; i--) {
-                if (slots[i] != null) {
-                    slots[i] = null;
-                    Sound.click();
-                    render();
-                    return;
+                let previous = -1;
+                for (let step = 0; step < 120; step++) {
+                    const options = neighbours(empty).filter(function (index) {
+                        return index !== previous;
+                    });
+                    const pick = options[Math.floor(Math.random() * options.length)];
+                    order[empty] = order[pick];
+                    order[pick] = 0;
+                    previous = empty;
+                    empty = pick;
                 }
-            }
-        });
+            } while (isSolved());
 
-        shuffleBtn.addEventListener("click", function () {
-            if (locked || solved) return;
-            order = QU.shuffle(order);
-            Sound.click();
-            renderKeys();
-        });
-
-        render();
-        return root;
-    }
-
-    /* --------------------------------------------------------
-       Крестики-нолики (добрый ИИ: иногда ошибается)
-       -------------------------------------------------------- */
-    function ttt(level, api) {
-        const root = h("div", "game game--ttt");
-        const boardEl = h("div", "ttt");
-        const status = h("p", "ttt__status", "Твой ход");
-        const reset = button("btn btn--ghost btn--small", "Сыграть ещё раз");
-
-        boardEl.setAttribute("role", "group");
-        boardEl.setAttribute("aria-label", "Крестики-нолики");
-        status.setAttribute("aria-live", "polite");
-        reset.hidden = true;
-
-        let board = new Array(9).fill("");
-        let active = true;
-        let solved = false;
-        let cells = [];
+            note.textContent = "Собери числа по порядку";
+            paint();
+        }
 
         function paint() {
             cells.forEach(function (cell, index) {
-                cell.textContent = board[index] === "X" ? "✕" : board[index] === "O" ? "○" : "";
-                cell.classList.toggle("is-o", board[index] === "O");
+                const value = order[index];
+                cell.textContent = value ? String(value) : "";
+                cell.classList.toggle("is-empty", value === 0);
+                cell.disabled = value === 0;
                 cell.setAttribute(
                     "aria-label",
-                    "Клетка " + (index + 1) + ": " +
-                    (board[index] === "X" ? "крестик" : board[index] === "O" ? "нолик" : "пусто")
+                    value ? "Плитка " + value : "Пустая клетка"
                 );
             });
         }
 
-        function winningLine(player) {
-            for (let i = 0; i < WIN_LINES.length; i++) {
-                const line = WIN_LINES[i];
-                if (board[line[0]] === player && board[line[1]] === player && board[line[2]] === player) {
-                    return line;
-                }
-            }
-            return null;
-        }
+        function slide(index) {
+            if (solved || order[index] === 0) return;
 
-        function highlight(line) {
-            line.forEach(function (index) {
-                cells[index].classList.add("is-win");
-            });
-        }
+            const row = Math.floor(index / size);
+            const col = index % size;
+            const emptyRow = Math.floor(empty / size);
+            const emptyCol = empty % size;
 
-        function resetGame() {
-            board = new Array(9).fill("");
-            active = true;
-            solved = false;
-            cells.forEach(function (cell) {
-                cell.disabled = false;
-                cell.classList.remove("is-win");
-            });
-            reset.hidden = true;
-            status.textContent = "Твой ход";
-            paint();
-        }
-
-        function finishWin() {
-            const line = winningLine("X");
-            if (!line) return false;
-            highlight(line);
-            active = false;
-            solved = true;
-            status.textContent = "Три в ряд! ✦";
-            window.setTimeout(function () {
-                api.onSolve();
-            }, 750);
-            return true;
-        }
-
-        function aiMove() {
-            if (solved) return;
-
-            const free = board.map(function (value, index) {
-                return value === "" ? index : null;
-            }).filter(function (value) { return value !== null; });
-
-            if (!free.length) return;
-
-            let move = null;
-
-            // Добрый ИИ: в трети случаев играет случайно,
-            // чтобы у игрока всегда был шанс выиграть.
-            if (Math.random() < 0.32) {
-                move = free[Math.floor(Math.random() * free.length)];
-            } else {
-                move = bestMove("O") ?? bestMove("X");
-                if (move == null && board[4] === "") move = 4;
-                if (move == null) {
-                    const corners = [0, 2, 6, 8].filter(function (i) { return board[i] === ""; });
-                    if (corners.length) move = corners[Math.floor(Math.random() * corners.length)];
-                }
-                if (move == null) move = free[Math.floor(Math.random() * free.length)];
+            if (Math.abs(row - emptyRow) + Math.abs(col - emptyCol) !== 1) {
+                return;
             }
 
-            board[move] = "O";
-            paint();
+            order[empty] = order[index];
+            order[index] = 0;
+            empty = index;
+
             Sound.click();
-
-            if (winningLine("O")) {
-                highlight(winningLine("O"));
-                active = false;
-                status.textContent = "Я выиграл. Но ты можешь ещё раз 😉";
-                reset.hidden = false;
-                QU.vibrate(30);
-                return;
-            }
-
-            if (board.indexOf("") === -1) {
-                active = false;
-                status.textContent = "Ничья. Сыграем ещё?";
-                reset.hidden = false;
-                return;
-            }
-
-            active = true;
-            status.textContent = "Твой ход";
-        }
-
-        function bestMove(player) {
-            for (let i = 0; i < WIN_LINES.length; i++) {
-                const line = WIN_LINES[i];
-                const values = line.map(function (index) { return board[index]; });
-                const playerCount = values.filter(function (v) { return v === player; }).length;
-                const emptyCount = values.filter(function (v) { return v === ""; }).length;
-
-                if (playerCount === 2 && emptyCount === 1) {
-                    return line[values.indexOf("")];
-                }
-            }
-            return null;
-        }
-
-        function playerMove(index) {
-            if (!active || solved || board[index] !== "") return;
-
-            board[index] = "X";
+            QU.vibrate(8);
             paint();
-            Sound.click();
 
-            if (finishWin()) return;
-
-            if (board.indexOf("") === -1) {
-                active = false;
-                status.textContent = "Ничья. Сыграем ещё?";
-                reset.hidden = false;
-                return;
+            if (isSolved()) {
+                solved = true;
+                note.textContent = "Все числа на местах ✦";
+                board.classList.add("is-solved");
+                window.setTimeout(function () {
+                    if (root.isConnected) api.onSolve();
+                }, 520);
             }
-
-            active = false;
-            status.textContent = "Думаю…";
-            window.setTimeout(function () {
-                if (!root.isConnected) return;
-                aiMove();
-            }, 420);
         }
 
-        for (let index = 0; index < 9; index++) {
+        for (let index = 0; index < total; index++) {
             (function (i) {
-                const cell = button("ttt__cell", "", "Клетка " + (i + 1) + ": пусто");
-                cell.addEventListener("click", function () { playerMove(i); });
+                const cell = button("slide__tile", "", "Плитка");
+                cell.addEventListener("click", function () { slide(i); });
                 cells.push(cell);
-                boardEl.appendChild(cell);
+                board.appendChild(cell);
             })(index);
         }
 
-        reset.addEventListener("click", resetGame);
+        again.addEventListener("click", scramble);
 
-        root.appendChild(boardEl);
-        root.appendChild(status);
-        root.appendChild(reset);
+        root.appendChild(board);
+        root.appendChild(note);
+        root.appendChild(again);
+
+        scramble();
+        return root;
+    }
+
+    /* --------------------------------------------------------
+       3. Кодовые диски — собери комбинацию
+       -------------------------------------------------------- */
+    function disks(level, api) {
+        const root = h("div", "game game--disks");
+        const wrap = h("div", "disks");
+        const note = statusBar("Поверни диски");
+
+        const symbols = (level.symbols && level.symbols.length)
+            ? level.symbols.slice()
+            : ["☀️", "🌙", "⭐", "🌸"];
+
+        const target = (level.target || []).map(function (value) {
+            const number = Number(value) || 0;
+            return ((number % symbols.length) + symbols.length) % symbols.length;
+        });
+
+        const values = target.map(function () { return 0; });
+        if (target.every(function (value) { return value === 0; }) && values.length) {
+            values[0] = 1;
+        }
+
+        let solved = false;
+        const dials = [];
+
+        function paint() {
+            dials.forEach(function (dial, index) {
+                dial.face.textContent = symbols[values[index]];
+                dial.face.setAttribute(
+                    "aria-label",
+                    "Диск " + (index + 1) + ": " + symbols[values[index]] +
+                    ". Нажми, чтобы повернуть."
+                );
+                dial.dots.forEach(function (dot, dotIndex) {
+                    dot.classList.toggle("is-on", dotIndex === values[index]);
+                });
+            });
+        }
+
+        function check() {
+            const matched = values.every(function (value, index) {
+                return value === target[index];
+            });
+
+            if (!matched) return;
+
+            solved = true;
+            wrap.classList.add("is-open");
+            note.textContent = "Замок открылся ✦";
+            Sound.success();
+
+            window.setTimeout(function () {
+                if (root.isConnected) api.onSolve();
+            }, 620);
+        }
+
+        target.forEach(function (_, index) {
+            const dial = h("div", "disk");
+            const face = button("disk__face", symbols[values[index]], "Диск " + (index + 1));
+            const dotsEl = h("div", "disk__dots");
+            const dots = [];
+
+            for (let d = 0; d < symbols.length; d++) {
+                const dot = h("span", "disk__dot");
+                dots.push(dot);
+                dotsEl.appendChild(dot);
+            }
+
+            face.addEventListener("click", function () {
+                if (solved) return;
+                values[index] = (values[index] + 1) % symbols.length;
+                Sound.click();
+                QU.vibrate(8);
+                paint();
+                check();
+            });
+
+            dial.appendChild(face);
+            dial.appendChild(dotsEl);
+            wrap.appendChild(dial);
+            dials.push({ face: face, dots: dots });
+        });
+
+        root.appendChild(wrap);
+        root.appendChild(note);
         paint();
+        return root;
+    }
 
+    /* --------------------------------------------------------
+       4. Созвездие — соедини звёзды по порядку
+       -------------------------------------------------------- */
+    function constellation(level, api) {
+        const root = h("div", "game game--sky");
+        const sky = h("div", "sky");
+        const note = statusBar("Начни с первой звезды");
+
+        const stars = (level.stars && level.stars.length) ? level.stars : [
+            { x: 50, y: 36 },
+            { x: 32, y: 22 },
+            { x: 14, y: 40 },
+            { x: 24, y: 64 },
+            { x: 50, y: 92 },
+            { x: 76, y: 64 },
+            { x: 86, y: 40 },
+            { x: 68, y: 22 }
+        ];
+
+        const svgNS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNS, "svg");
+        const line = document.createElementNS(svgNS, "polyline");
+
+        svg.setAttribute("viewBox", "0 0 100 100");
+        svg.setAttribute("preserveAspectRatio", "none");
+        svg.setAttribute("aria-hidden", "true");
+        svg.classList.add("sky__lines");
+        line.setAttribute("points", "");
+        svg.appendChild(line);
+        sky.appendChild(svg);
+
+        let progress = 0;
+        let solved = false;
+        const nodes = [];
+
+        function points(upTo) {
+            return stars.slice(0, upTo).map(function (star) {
+                return star.x + "," + star.y;
+            }).join(" ");
+        }
+
+        function reset() {
+            progress = 0;
+            line.setAttribute("points", "");
+            nodes.forEach(function (node) { node.classList.remove("is-lit"); });
+            note.textContent = "Начни с первой звезды";
+        }
+
+        stars.forEach(function (star, index) {
+            const node = button("sky__star", String(index + 1), "Звезда " + (index + 1));
+            node.style.left = star.x + "%";
+            node.style.top = star.y + "%";
+
+            node.addEventListener("click", function () {
+                if (solved) return;
+
+                if (index !== progress) {
+                    if (index < progress) return;
+                    Sound.error();
+                    QU.vibrate([20, 30, 20]);
+                    api.shake();
+                    reset();
+                    return;
+                }
+
+                progress += 1;
+                node.classList.add("is-lit");
+                Sound.flip();
+                QU.vibrate(10);
+
+                line.setAttribute("points", points(progress));
+                note.textContent = "Звёзд соединено: " + progress + " из " + stars.length;
+
+                if (progress === stars.length) {
+                    solved = true;
+
+                    if (level.close !== false) {
+                        line.setAttribute(
+                            "points",
+                            points(stars.length) + " " + stars[0].x + "," + stars[0].y
+                        );
+                    }
+
+                    sky.classList.add("is-done");
+                    note.textContent = "Созвездие собрано ✦";
+
+                    window.setTimeout(function () {
+                        if (root.isConnected) api.onSolve();
+                    }, 820);
+                }
+            });
+
+            nodes.push(node);
+            sky.appendChild(node);
+        });
+
+        root.appendChild(sky);
+        root.appendChild(note);
+        return root;
+    }
+
+    /* --------------------------------------------------------
+       5. Лабиринт — проведи сердечко к подарку
+       -------------------------------------------------------- */
+    function maze(level, api) {
+        const root = h("div", "game game--maze");
+        const board = h("div", "maze");
+        const note = statusBar("Веди сердечко к подарку");
+        const again = button("game__action", "Начать заново");
+
+        const grid = (level.grid && level.grid.length) ? level.grid : [
+            "S.....#",
+            "#####.#",
+            "#.....#",
+            "#.#####",
+            "#.....#",
+            "#####.#",
+            "#.....F"
+        ];
+
+        const rows = grid.length;
+        const cols = grid[0].length;
+
+        board.style.setProperty("--cols", String(cols));
+        board.style.setProperty("--rows", String(rows));
+
+        let start = null;
+        let finish = null;
+        let current = null;
+        let solved = false;
+        let dragging = false;
+        let lastBuzz = 0;
+
+        const cells = [];
+
+        function key(row, col) {
+            return row + ":" + col;
+        }
+
+        function paintCell(cell, isCurrent) {
+            cell.classList.toggle("is-current", isCurrent);
+        }
+
+        function markStart() {
+            cells.forEach(function (cell) {
+                cell.classList.remove("is-trail", "is-current");
+            });
+
+            if (!start) return;
+            current = start;
+            start.cell.classList.add("is-trail", "is-current");
+            current.cell.textContent = "♥";
+            if (finish) finish.cell.textContent = "🎁";
+        }
+
+        function buzz() {
+            const now = Date.now();
+            if (now - lastBuzz < 500) return;
+            lastBuzz = now;
+            QU.vibrate(14);
+            Sound.error();
+        }
+
+        function moveTo(cell) {
+            if (solved || !current) return;
+            if (cell.classList.contains("is-wall")) {
+                buzz();
+                return;
+            }
+
+            const row = Number(cell.dataset.row);
+            const col = Number(cell.dataset.col);
+
+            if (row === current.row && col === current.col) return;
+
+            const distance = Math.abs(row - current.row) + Math.abs(col - current.col);
+            if (distance !== 1) return;
+
+            current = { row: row, col: col, cell: cell };
+            cell.classList.add("is-trail");
+            paintCell(cell, true);
+
+            cells.forEach(function (item) {
+                if (item !== cell && item !== start.cell && item !== (finish && finish.cell)) {
+                    item.classList.remove("is-current");
+                }
+            });
+
+            if (start && start.cell !== cell) start.cell.classList.remove("is-current");
+
+            Sound.click();
+            QU.vibrate(8);
+
+            if (finish && row === finish.row && col === finish.col) {
+                solved = true;
+                note.textContent = "Ты дошла до подарка ✦";
+                board.classList.add("is-solved");
+                window.setTimeout(function () {
+                    if (root.isConnected) api.onSolve();
+                }, 620);
+            }
+        }
+
+        grid.forEach(function (row, rowIndex) {
+            for (let colIndex = 0; colIndex < cols; colIndex++) {
+                const char = row[colIndex] || "#";
+                const cell = h("div", "maze__cell");
+                cell.dataset.row = String(rowIndex);
+                cell.dataset.col = String(colIndex);
+
+                if (char === "#") {
+                    cell.classList.add("is-wall");
+                    cell.setAttribute("aria-hidden", "true");
+                } else {
+                    cell.classList.add("is-open");
+                    cell.setAttribute("role", "button");
+                    cell.tabIndex = 0;
+
+                    if (char === "S") {
+                        cell.classList.add("is-start");
+                        start = { row: rowIndex, col: colIndex, cell: cell };
+                    }
+
+                    if (char === "F") {
+                        cell.classList.add("is-finish");
+                        finish = { row: rowIndex, col: colIndex, cell: cell };
+                    }
+
+                    cell.addEventListener("click", function () { moveTo(cell); });
+                    cell.addEventListener("keydown", function (event) {
+                        if (event.key !== "Enter" && event.key !== " ") return;
+                        event.preventDefault();
+                        moveTo(cell);
+                    });
+                }
+
+                cells.push(cell);
+                board.appendChild(cell);
+            }
+        });
+
+        board.addEventListener("pointerdown", function (event) {
+            if (solved) return;
+            const cell = event.target.closest(".maze__cell");
+            if (!cell) return;
+            dragging = true;
+            moveTo(cell);
+        });
+
+        function onMove(event) {
+            if (!dragging || solved) return;
+            if (!root.isConnected) {
+                dragging = false;
+                return;
+            }
+
+            const element = document.elementFromPoint(event.clientX, event.clientY);
+            const cell = element ? element.closest(".maze__cell") : null;
+            if (cell) moveTo(cell);
+        }
+
+        function onUp() {
+            dragging = false;
+        }
+
+        window.addEventListener("pointermove", onMove, { passive: true });
+        window.addEventListener("pointerup", onUp);
+        window.addEventListener("pointercancel", onUp);
+
+        again.addEventListener("click", function () {
+            if (solved) return;
+            solved = false;
+            board.classList.remove("is-solved");
+            markStart();
+            note.textContent = "Веди сердечко к подарку";
+        });
+
+        markStart();
+
+        root.appendChild(board);
+        root.appendChild(note);
+        root.appendChild(again);
+        return root;
+    }
+
+    /* --------------------------------------------------------
+       6. Поймай звёзды
+       -------------------------------------------------------- */
+    function stars(level, api) {
+        const root = h("div", "game game--catch");
+        const arena = h("div", "catch");
+        const note = statusBar("Поймано 0 из " + (level.goal || 7));
+        const meter = h("div", "catch__bar");
+        const fill = h("span");
+        meter.appendChild(fill);
+
+        const goal = QU.clamp(level.goal || 7, 3, 15);
+        const life = REDUCED() ? 2300 : 1500;
+        const gap = REDUCED() ? 1000 : 620;
+
+        let caught = 0;
+        let solved = false;
+        let timers = [];
+
+        function later(fn, ms) {
+            const id = window.setTimeout(function () {
+                timers = timers.filter(function (item) { return item !== id; });
+                if (!root.isConnected) return;
+                fn();
+            }, ms);
+            timers.push(id);
+            return id;
+        }
+
+        function clearTimers() {
+            timers.forEach(window.clearTimeout);
+            timers = [];
+        }
+
+        function update() {
+            note.textContent = caught >= goal
+                ? "Все звёзды твои ✦"
+                : "Поймано " + caught + " из " + goal;
+            fill.style.width = Math.min(100, (caught / goal) * 100) + "%";
+        }
+
+        function catchStar(star) {
+            if (solved) return;
+
+            star.remove();
+            caught += 1;
+            Sound.click();
+            QU.vibrate(12);
+            update();
+
+            if (caught >= goal) {
+                solved = true;
+                clearTimers();
+                arena.innerHTML = "";
+                note.textContent = "Все звёзды твои ✦";
+
+                later(function () { api.onSolve(); }, 680);
+            }
+        }
+
+        function spawn() {
+            if (solved || !root.isConnected) return;
+
+            const star = button("catch__star", "✦", "Звёздочка");
+            star.style.left = (10 + Math.random() * 80) + "%";
+            star.style.top = (14 + Math.random() * 70) + "%";
+            star.addEventListener("click", function () { catchStar(star); });
+            arena.appendChild(star);
+
+            later(function () { star.remove(); }, life);
+            later(spawn, gap);
+        }
+
+        root.appendChild(arena);
+        root.appendChild(note);
+        root.appendChild(meter);
+
+        update();
+        later(spawn, 500);
         return root;
     }
 
     return {
-        quiz: quiz,
-        lock: lock,
-        memory: memory,
-        word: word,
-        ttt: ttt
+        fireflies: fireflies,
+        sliding: sliding,
+        disks: disks,
+        constellation: constellation,
+        maze: maze,
+        stars: stars
     };
 })();

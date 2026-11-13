@@ -534,299 +534,6 @@ body[data-view="intro"] .progress {
     animation: cardIn 0.35s var(--ease-out) both;
 }
 
-/* ---------- Память ---------- */
-
-.memory {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-}
-
-.mem {
-    position: relative;
-    aspect-ratio: 1;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    perspective: 800px;
-    touch-action: manipulation;
-}
-
-.mem__inner {
-    position: absolute;
-    inset: 0;
-    border-radius: 14px;
-    transform-style: preserve-3d;
-    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-
-.mem.is-flipped .mem__inner {
-    transform: rotateY(180deg);
-}
-
-.mem__face {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    border-radius: 14px;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    box-shadow: 0 4px 10px rgba(42, 26, 43, 0.09);
-}
-
-.mem__face--back {
-    border: 1px solid rgba(255, 255, 255, 0.13);
-    background:
-        radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.14) 0%, transparent 42%),
-        linear-gradient(145deg, #2c1a3d, #452a59);
-    color: rgba(233, 184, 114, 0.85);
-    font-size: 17px;
-    text-shadow: 0 0 12px rgba(233, 184, 114, 0.65);
-}
-
-.mem__face--front {
-    border: 1px solid rgba(232, 86, 124, 0.22);
-    background: #fff;
-    font-size: 31px;
-    line-height: 1;
-    transform: rotateY(180deg);
-}
-
-.mem__face--front img {
-    width: 82%;
-    height: 82%;
-    object-fit: cover;
-    border-radius: 10px;
-}
-
-.mem.is-matched .mem__face--front {
-    background: linear-gradient(145deg, #ffffff, #ffeef2);
-    box-shadow: inset 0 0 0 2px rgba(232, 86, 124, 0.38);
-}
-
-.mem.is-matched {
-    animation: matchedPop 0.5s ease;
-}
-
-@keyframes matchedPop {
-    50% { transform: scale(1.07); }
-}
-
-/* ---------- Кодовый замок ---------- */
-
-.lock__dots {
-    display: flex;
-    justify-content: center;
-    gap: 11px;
-    margin: 4px 0 20px;
-}
-
-.lock__dot {
-    width: 17px;
-    height: 17px;
-    display: grid;
-    place-items: center;
-    border: 1.5px solid rgba(42, 26, 43, 0.2);
-    border-radius: 50%;
-    background: #fff;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
-}
-
-.lock__dot.is-filled {
-    border-color: var(--rose);
-    background: var(--rose);
-    transform: scale(1.06);
-}
-
-.keypad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 9px;
-    max-width: 296px;
-    margin: 0 auto;
-}
-
-.key {
-    min-height: 56px;
-    border: 1px solid rgba(42, 26, 43, 0.1);
-    border-radius: 14px;
-    background: #fff;
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 21px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 3px 0 rgba(42, 26, 43, 0.07);
-    transition: transform 0.08s, background-color 0.15s, box-shadow 0.08s;
-    touch-action: manipulation;
-}
-
-.key:active {
-    transform: translateY(2px);
-    background: #fff1f4;
-    box-shadow: none;
-}
-
-.key--ghost {
-    border-color: transparent;
-    background: transparent;
-    box-shadow: none;
-    color: var(--ink-soft);
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.key--ghost:active {
-    background: rgba(42, 26, 43, 0.06);
-}
-
-/* ---------- Слово из букв ---------- */
-
-.word__slots {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    margin: 2px 0 18px;
-}
-
-.word__slot {
-    min-width: 38px;
-    height: 48px;
-    padding: 0 6px;
-    display: grid;
-    place-items: center;
-    border: 1.5px dashed rgba(42, 26, 43, 0.18);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.5);
-    color: var(--ink);
-    font-family: var(--font-display);
-    font-size: 23px;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.word__slot.is-filled {
-    border-style: solid;
-    border-color: rgba(232, 86, 124, 0.4);
-    background: #fff;
-}
-
-.word__keys {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 7px;
-    margin-bottom: 16px;
-}
-
-.word__key {
-    width: 42px;
-    height: 46px;
-    border: 1px solid rgba(42, 26, 43, 0.12);
-    border-radius: 10px;
-    background: #fff;
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 17px;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-    box-shadow: 0 2px 0 rgba(42, 26, 43, 0.06);
-    transition: transform 0.08s, opacity 0.2s;
-    touch-action: manipulation;
-}
-
-.word__key:active {
-    transform: scale(0.94);
-}
-
-.word__key:disabled {
-    opacity: 0.22;
-    box-shadow: none;
-}
-
-.word__actions {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-}
-
-.word__action {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 14px;
-    border: 1px solid rgba(42, 26, 43, 0.12);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.65);
-    color: var(--ink-soft);
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-/* ---------- Крестики-нолики ---------- */
-
-.ttt {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    max-width: 262px;
-    margin: 0 auto 14px;
-    padding: 8px;
-    border-radius: 20px;
-    background: rgba(42, 26, 43, 0.045);
-}
-
-.ttt__cell {
-    aspect-ratio: 1;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 1px solid rgba(42, 26, 43, 0.08);
-    border-radius: 12px;
-    background: #fff;
-    color: var(--rose-deep);
-    font-family: var(--font-body);
-    font-size: 29px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
-    touch-action: manipulation;
-}
-
-.ttt__cell:active {
-    transform: scale(0.96);
-}
-
-.ttt__cell.is-o {
-    color: #3f8f86;
-}
-
-.ttt__cell.is-win {
-    background: #fff3d8;
-    box-shadow: inset 0 0 0 2px var(--gold);
-}
-
-.ttt__status {
-    min-height: 20px;
-    margin: 0 0 12px;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.45;
-    text-align: center;
-    color: var(--ink-soft);
-}
-
 /* ---------- Награда ---------- */
 
 .reward {
@@ -1279,25 +986,6 @@ body[data-view="intro"] .progress {
         font-size: 14.5px;
     }
 
-    .key {
-        min-height: 52px;
-    }
-
-    .word__key {
-        width: 39px;
-        height: 44px;
-    }
-
-    .word__slots {
-        gap: 4px;
-    }
-
-    .word__slot {
-        min-width: 31px;
-        height: 42px;
-        padding: 0 4px;
-        font-size: 20px;
-    }
 }
 
 @media (max-height: 700px) {
@@ -1336,10 +1024,6 @@ body[data-view="intro"] .progress {
 
     .level-head {
         margin-bottom: 14px;
-    }
-
-    .mem__face--front {
-        font-size: 26px;
     }
 }
 
@@ -1418,14 +1102,80 @@ body[data-view="intro"] .progress {
     .hint-toggle {
         margin-top: 8px;
     }
+}
 
-    .ttt {
-        max-width: 200px;
+/* Компактный режим для экранов с играми: на невысоких телефонах
+   убираем лишний текст, чтобы задание и игра помещались целиком */
+@media (max-height: 700px) {
+    body[data-view="level"] .card {
+        padding-top: 18px;
+        padding-bottom: 16px;
+    }
+
+    body[data-view="level"] .kicker {
+        display: none;
+    }
+
+    body[data-view="level"] .level-head {
         margin-bottom: 10px;
     }
 
-    .ttt__status {
+    body[data-view="level"] .level-count {
+        margin-bottom: 5px;
+    }
+
+    body[data-view="level"] .title--level {
+        margin-bottom: 7px;
+        font-size: clamp(23px, 7vw, 29px);
+    }
+
+    body[data-view="level"] .lead {
+        margin-bottom: 10px;
+        font-size: 12.5px;
+        line-height: 1.45;
+    }
+
+    body[data-view="level"] .game__status {
+        margin: 9px 0 0;
+    }
+
+    body[data-view="level"] .game__action {
+        display: none;
+    }
+
+    body[data-view="level"] .hint-toggle {
+        margin-top: 9px;
+    }
+
+    body[data-view="level"] .catch {
+        height: clamp(178px, 33dvh, 240px);
+    }
+}
+
+/* Совсем невысокие экраны (например, 320×568): поджимаем отступы,
+   чтобы внизу была видна и подсказка */
+@media (max-height: 620px) {
+    body[data-view="level"] .card {
+        padding-top: 12px;
+        padding-bottom: 10px;
+    }
+
+    body[data-view="level"] .title--level {
+        margin-bottom: 5px;
+    }
+
+    body[data-view="level"] .lead {
         margin-bottom: 8px;
+        font-size: 12px;
+    }
+
+    body[data-view="level"] .game__status {
+        margin-top: 6px;
+    }
+
+    body[data-view="level"] .hint-toggle {
+        margin-top: 6px;
+        padding: 6px 12px;
     }
 }
 

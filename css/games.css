@@ -1,0 +1,429 @@
+/* ============================================================
+   Стили шести игр квеста
+   ============================================================ */
+
+/* ---------- Общее ---------- */
+
+.game__status {
+    min-height: 18px;
+    margin: 14px 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--ink-soft);
+}
+
+.game__action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    margin: 0 auto;
+    padding: 9px 16px;
+    border: 1px solid rgba(42, 26, 43, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--ink-soft);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.15s, transform 0.1s;
+}
+
+.game__action:active {
+    background: rgba(42, 26, 43, 0.06);
+    transform: scale(0.98);
+}
+
+/* ---------- 1. Огоньки ---------- */
+
+.fire {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+}
+
+.fire__pad {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(42, 26, 43, 0.1);
+    border-radius: 24px;
+    background: linear-gradient(150deg, #ffffff, #fdf1f5);
+    color: rgba(42, 26, 43, 0.22);
+    font-size: 38px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(42, 26, 43, 0.06), inset 0 1px 0 #ffffff;
+    transition:
+        transform 0.18s var(--ease-out),
+        box-shadow 0.25s,
+        background 0.25s,
+        color 0.2s;
+    touch-action: manipulation;
+}
+
+.fire__pad:active {
+    transform: scale(0.96);
+}
+
+.fire__pad.is-lit {
+    color: #ffffff;
+    background: radial-gradient(circle at 40% 35%, #ffe0ae, var(--gold) 44%, #d98a5e 100%);
+    box-shadow:
+        0 0 26px rgba(233, 184, 114, 0.7),
+        0 0 58px rgba(232, 86, 124, 0.32);
+    transform: scale(1.05);
+}
+
+.fire.is-waiting .fire__pad {
+    pointer-events: none;
+    opacity: 0.92;
+}
+
+/* ---------- 2. Пятнашки ---------- */
+
+.slide {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    width: 100%;
+    max-width: 272px;
+    margin: 0 auto;
+    padding: 8px;
+    border-radius: 22px;
+    background: rgba(42, 26, 43, 0.05);
+}
+
+.slide__tile {
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid rgba(42, 26, 43, 0.08);
+    border-radius: 14px;
+    background: #ffffff;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 24px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 3px 0 rgba(42, 26, 43, 0.06);
+    transition: transform 0.1s, background-color 0.15s;
+    touch-action: manipulation;
+}
+
+.slide__tile:active {
+    transform: scale(0.94);
+    background: #fff1f4;
+}
+
+.slide__tile.is-empty {
+    border-color: transparent;
+    background: rgba(42, 26, 43, 0.04);
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.slide.is-solved .slide__tile {
+    background: linear-gradient(145deg, #ffffff, #fff3d8);
+    border-color: rgba(233, 184, 114, 0.55);
+}
+
+/* ---------- 3. Кодовые диски ---------- */
+
+.disks {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 auto;
+}
+
+.disk {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+}
+
+.disk__face {
+    width: 76px;
+    height: 96px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(42, 26, 43, 0.1);
+    border-radius: 20px;
+    background: linear-gradient(160deg, #ffffff, #fdeff4);
+    font-size: 34px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 #ffffff, 0 6px 16px rgba(42, 26, 43, 0.08);
+    transition: transform 0.1s, border-color 0.2s, box-shadow 0.25s;
+    touch-action: manipulation;
+}
+
+.disk__face:active {
+    transform: scale(0.95);
+}
+
+.disk__dots {
+    display: flex;
+    gap: 5px;
+}
+
+.disk__dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(42, 26, 43, 0.16);
+    transition: background-color 0.15s, transform 0.15s;
+}
+
+.disk__dot.is-on {
+    background: var(--rose);
+    transform: scale(1.25);
+}
+
+.disks.is-open .disk__face {
+    border-color: var(--gold);
+    box-shadow:
+        0 0 0 3px rgba(233, 184, 114, 0.22),
+        inset 0 1px 0 #ffffff;
+}
+
+@media (max-width: 340px) {
+    .disk__face {
+        width: 68px;
+        height: 88px;
+        font-size: 30px;
+    }
+
+    .disks {
+        gap: 9px;
+    }
+}
+
+/* ---------- 4. Созвездие ---------- */
+
+.sky {
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+    border-radius: 24px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 30% 18%, #3b2452 0%, #1d1130 62%, #150c24 100%);
+    box-shadow:
+        inset 0 0 46px rgba(0, 0, 0, 0.55),
+        0 12px 26px -18px rgba(0, 0, 0, 0.8);
+    touch-action: manipulation;
+}
+
+.sky__lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.sky__lines polyline {
+    fill: none;
+    stroke: rgba(233, 184, 114, 0.92);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 2px rgba(233, 184, 114, 0.8));
+}
+
+.sky__star {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 248, 241, 0.62);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        transform 0.15s var(--ease-out),
+        background 0.25s,
+        color 0.2s,
+        box-shadow 0.25s;
+    touch-action: manipulation;
+}
+
+.sky__star::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(233, 184, 114, 0.28), transparent 65%);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.sky__star.is-lit {
+    background: radial-gradient(circle at 40% 35%, #fff8e6, var(--gold) 70%);
+    border-color: #ffffff;
+    color: #5a3410;
+    box-shadow: 0 0 18px rgba(233, 184, 114, 0.85);
+    transform: translate(-50%, -50%) scale(1.12);
+}
+
+.sky.is-done .sky__star {
+    box-shadow: 0 0 20px rgba(233, 184, 114, 0.9);
+}
+
+@media (max-width: 340px) {
+    .sky__star {
+        width: 34px;
+        height: 34px;
+        font-size: 10px;
+    }
+}
+
+/* ---------- 5. Лабиринт ---------- */
+
+.maze {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 7), 1fr);
+    gap: 3px;
+    width: 100%;
+    max-width: 288px;
+    margin: 0 auto;
+    padding: 8px;
+    border-radius: 20px;
+    background: rgba(42, 26, 43, 0.05);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.maze__cell {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1;
+    transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+.maze__cell.is-open {
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: inset 0 0 0 1px rgba(42, 26, 43, 0.05);
+    cursor: pointer;
+}
+
+.maze__cell.is-wall {
+    background: linear-gradient(145deg, #2c1a3d, #452a59);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.maze__cell.is-trail {
+    background: linear-gradient(150deg, #ffe6ec, #fff3d8);
+}
+
+.maze__cell.is-current {
+    background: radial-gradient(circle at 40% 35%, #ffffff, #ffe0e9);
+    box-shadow:
+        inset 0 0 0 2px var(--rose),
+        0 0 12px rgba(232, 86, 124, 0.4);
+    transform: scale(1.03);
+}
+
+.maze__cell.is-finish {
+    background: rgba(233, 184, 114, 0.3);
+}
+
+.maze__cell.is-finish.is-current {
+    background: radial-gradient(circle at 40% 35%, #ffffff, #ffe9b8);
+}
+
+.maze.is-solved .maze__cell.is-current {
+    box-shadow:
+        inset 0 0 0 2px var(--gold),
+        0 0 18px rgba(233, 184, 114, 0.6);
+}
+
+/* ---------- 6. Поймай звёзды ---------- */
+
+.catch {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    height: 250px;
+    margin: 0 auto;
+    border-radius: 22px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 26%, #38214e 0%, #1d1130 58%, #140b22 100%);
+    box-shadow: inset 0 0 44px rgba(0, 0, 0, 0.5);
+    touch-action: manipulation;
+}
+
+.catch__star {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #fffaf0, var(--gold) 72%);
+    color: #7a4a12;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 0 16px rgba(233, 184, 114, 0.75);
+    animation: starIn 0.3s var(--ease-out) both;
+    touch-action: manipulation;
+}
+
+.catch__star:active {
+    transform: translate(-50%, -50%) scale(0.9);
+}
+
+@keyframes starIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.35);
+    }
+}
+
+.catch__bar {
+    width: 100%;
+    max-width: 320px;
+    height: 4px;
+    margin: 12px auto 0;
+    border-radius: 999px;
+    background: rgba(42, 26, 43, 0.09);
+    overflow: hidden;
+}
+
+.catch__bar span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--gold), var(--rose));
+    transition: width 0.3s var(--ease-out);
+}
