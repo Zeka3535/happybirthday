@@ -932,6 +932,178 @@ body[data-view="intro"] .progress {
     width: 100%;
 }
 
+/* ---------- Ключ с записки ---------- */
+
+.keylock {
+    margin: 0 0 16px;
+    padding: 16px 15px 15px;
+    border: 1px solid rgba(42, 26, 43, 0.1);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.62);
+    text-align: left;
+}
+
+.keylock__label {
+    margin: 0 0 5px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rose-deep);
+}
+
+.keylock__where {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(43, 26, 61, 0.07);
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+}
+
+.keylock__where span {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(42, 26, 43, 0.4);
+}
+
+.keylock__back {
+    margin-top: 2px;
+    font-size: 12px;
+    text-decoration: none;
+    color: rgba(42, 26, 43, 0.42);
+}
+
+.reward--enter .reward__label {
+    margin-bottom: 6px;
+}
+
+.reward--enter .title--level {
+    margin-bottom: 16px;
+}
+
+.keylock__text {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+}
+
+.keylock .form {
+    gap: 9px;
+}
+
+.keylock .field {
+    min-height: 52px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.keylock .field::placeholder {
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: none;
+}
+
+.keylock .btn {
+    min-height: 50px;
+    font-size: 15px;
+}
+
+.keylock .link-btn {
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.keylock__hint {
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    border: 1px dashed rgba(185, 47, 91, 0.3);
+    border-radius: 12px;
+    background: rgba(233, 184, 114, 0.14);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ink);
+    animation: cardIn 0.3s var(--ease-out) both;
+}
+
+.keylock__ok {
+    margin: 16px 0 18px;
+    padding: 12px 14px;
+    border: 1px solid rgba(143, 211, 199, 0.6);
+    border-radius: 14px;
+    background: rgba(143, 211, 199, 0.18);
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+    color: var(--ink);
+    animation: cardIn 0.4s var(--ease-out) both;
+}
+
+.keylock__ok b {
+    letter-spacing: 0.08em;
+    color: var(--rose-deep);
+}
+
+/* ---------- Финал: фраза из ключей ---------- */
+
+.phrase {
+    margin: 0 0 18px;
+    padding: 18px 16px;
+    border-radius: 18px;
+    background:
+        radial-gradient(120% 100% at 15% 0%, rgba(233, 184, 114, 0.18) 0%, transparent 55%),
+        linear-gradient(150deg, #2b1a3d, #3d2350);
+    color: var(--cream);
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.34;
+    letter-spacing: 0.01em;
+    text-align: center;
+    box-shadow: 0 18px 34px -22px rgba(43, 26, 61, 0.9);
+}
+
+.phrase small {
+    display: block;
+    margin-bottom: 7px;
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 248, 241, 0.55);
+}
+
+.gift-place {
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    border: 1px dashed rgba(185, 47, 91, 0.34);
+    border-radius: 16px;
+    background: rgba(233, 184, 114, 0.14);
+    font-size: 13.5px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--ink);
+}
+
+.gift-place b {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rose-deep);
+}
+
 /* ---------- Финал ---------- */
 
 .finale {

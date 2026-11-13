@@ -34,10 +34,12 @@
     const state = {
         view: "intro",
         index: 0,
-        completed: []
+        completed: [],
+        keys: []
     };
 
     let toastTimer = null;
+    let rewardStage = "clue";
 
     /* --------------------------------------------------------
        Вспомогательное
@@ -52,10 +54,24 @@
 
     const esc = QU.escapeHtml;
 
+    /** Возвращает список допустимых слов-ключей у награды. */
+    function rewardKeys(reward) {
+        if (!reward || reward.key == null) return [];
+        const list = Array.isArray(reward.key) ? reward.key : [reward.key];
+        return list
+            .filter(function (value) { return value != null && String(value).trim() !== ""; })
+            .map(function (value) { return String(value).trim(); });
+    }
+
+    function keyCopy() {
+        return QUEST.meta.keyLock || {};
+    }
+
     function saveProgress() {
         QU.storage.set(STORAGE_KEY, {
             index: state.index,
             completed: state.completed,
+            keys: state.keys,
             sound: Sound.isEnabled(),
             savedAt: Date.now()
         });
@@ -174,8 +190,10 @@
 
             if (action === "start") {
                 state.completed = [];
+                state.keys = [];
                 state.index = 0;
                 state.view = "level";
+                rewardStage = "clue";
                 saveProgress();
                 render();
             }
@@ -185,6 +203,8 @@
                 if (stored && typeof stored.index === "number") {
                     state.index = QU.clamp(stored.index, 0, total - 1);
                     state.completed = Array.isArray(stored.completed) ? stored.completed : [];
+                    state.keys = Array.isArray(stored.keys) ? stored.keys : [];
+                    rewardStage = "clue";
 
                     const current = QUEST.levels[state.index];
                     state.view = current && state.completed.indexOf(current.id) !== -1
@@ -213,6 +233,8 @@
             render();
             return;
         }
+
+        rewardStage = "clue";
 
         const card = h("section", "card");
         const counter =
@@ -283,6 +305,7 @@
             state.completed.push(level.id);
         }
 
+        rewardStage = "clue";
         saveProgress();
 
         Sound.success();
@@ -308,29 +331,177 @@
 
         const reward = level.reward || {};
         const isLast = state.index === total - 1;
+        const allowed = rewardKeys(reward);
+        const needsKey = allowed.length > 0;
+        const keyFound = state.keys.indexOf(level.id) !== -1;
+        const unlocked = !needsKey || keyFound;
+        const copy = keyCopy();
 
-        const card = h("section", "card reward");
+        const stage = keyFound
+            ? "done"
+            : (needsKey && rewardStage === "enter" ? "enter" : "clue");
+
+        const card = h(
+            "section",
+            "card reward" + (stage === "enter" ? " reward--enter" : "")
+        );
+
+        const keyBlock = stage === "enter"
+            ? '<div class="keylock">' +
+                (reward.text
+                    ? '<p class="keylock__where"><span>' +
+                        esc(copy.whereLabel || "Где искать") + "</span>" +
+                        esc(reward.text) +
+                      "</p>"
+                    : "") +
+                '<p class="keylock__label">' + esc(copy.label || "Ключ с записки") + "</p>" +
+                '<p class="keylock__text">' + esc(copy.text || "Нашла записку? Введи слово, которое на ней написано.") + "</p>" +
+                '<form class="form" data-key-form novalidate>' +
+                    '<input class="field keylock__input" type="text" ' +
+                        'placeholder="' + esc(copy.placeholder || "Слово с записки") + '" ' +
+                        'aria-label="' + esc(copy.placeholder || "Слово с записки") + '" ' +
+                        'autocomplete="off" autocapitalize="characters" spellcheck="false" ' +
+                        'enterkeyhint="go">' +
+                    '<p class="error" aria-live="polite"></p>' +
+                    '<button class="btn btn--primary" type="submit">' +
+                        esc(copy.button || "Проверить ключ") +
+                    "</button>" +
+                "</form>" +
+                (reward.keyHint
+                    ? '<button type="button" class="link-btn" data-action="key-hint">' +
+                        esc(copy.hintToggle || "Не получается? Подсказка") +
+                      "</button>" +
+                      '<p class="keylock__hint" hidden>' + esc(reward.keyHint) + "</p>"
+                    : "") +
+                '<button type="button" class="link-btn keylock__back" data-action="key-back">' +
+                    esc(copy.backLabel || "← Вернуться к подсказке") +
+                "</button>" +
+            "</div>"
+            : "";
+
+        const acceptedBlock = stage === "done" && needsKey
+            ? '<p class="keylock__ok">' + "✦ " +
+                esc(copy.accepted || "Ключ принят") + ": <b>" +
+                esc(allowed[0]) + "</b></p>"
+            : "";
+
+        const foundButton = stage === "clue" && needsKey
+            ? '<button type="button" class="btn btn--primary" data-action="key-start">' +
+                esc(copy.foundLabel || "Я нашла записку") +
+              "</button>"
+            : "";
+
+        const nextButton = unlocked
+            ? '<button type="button" class="btn btn--primary" data-action="next">' +
+                esc(isLast
+                    ? QUEST.meta.finalButtonLabel
+                    : (copy.nextLabel || "Дальше")) +
+              "</button>"
+            : "";
 
         card.innerHTML =
-            '<div class="reward__seal">' + SPARKLE_SVG + "</div>" +
+            (stage === "enter" ? "" : '<div class="reward__seal">' + SPARKLE_SVG + "</div>") +
             '<p class="reward__label">' +
                 esc(reward.label || "Подсказка " + (state.index + 1)) +
             "</p>" +
             '<h2 class="title title--level">' +
                 esc(reward.title || "Подарок ждёт") +
             "</h2>" +
-            '<div class="clue">' +
-                "<p>" + esc(reward.text || "") + "</p>" +
-                (reward.note ? '<p class="clue__note">' + esc(reward.note) + "</p>" : "") +
-            "</div>" +
-            (reward.image
+            (stage === "enter"
+                ? ""
+                : '<div class="clue">' +
+                    "<p>" + esc(reward.text || "") + "</p>" +
+                    (reward.note ? '<p class="clue__note">' + esc(reward.note) + "</p>" : "") +
+                  "</div>") +
+            (reward.image && stage !== "enter"
                 ? '<div class="reward__photo"><img src="' + esc(reward.image) + '" alt="" loading="lazy"></div>'
                 : "") +
-            '<button type="button" class="btn btn--primary" data-action="next">' +
-                esc(isLast ? QUEST.meta.finalButtonLabel : "Дальше") +
-            "</button>";
+            acceptedBlock +
+            keyBlock +
+            foundButton +
+            nextButton;
 
+        /* --- ввод ключа --- */
+        const form = card.querySelector("[data-key-form]");
+        if (form) {
+            const input = form.querySelector(".keylock__input");
+            const error = form.querySelector(".error");
+            const hint = card.querySelector(".keylock__hint");
+            let attempts = 0;
+
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+
+                const given = QU.normalize(input.value);
+                if (!given) {
+                    error.textContent = copy.empty || "Впиши слово с записки ✦";
+                    return;
+                }
+
+                const accepted = allowed.map(QU.normalize);
+
+                if (accepted.indexOf(given) !== -1) {
+                    if (state.keys.indexOf(level.id) === -1) {
+                        state.keys.push(level.id);
+                    }
+                    saveProgress();
+
+                    Sound.success();
+                    QU.vibrate([20, 40, 20, 40, 60]);
+                    FX.burst(window.innerWidth / 2, window.innerHeight * 0.34, 52);
+
+                    render();
+                    showToast(copy.toast || "Ключ принят ✦");
+                    return;
+                }
+
+                attempts += 1;
+                Sound.error();
+                QU.vibrate([25, 35, 25]);
+                shakeCard(card);
+                error.textContent = attempts >= 2
+                    ? (copy.errorStrong || "Пока не то. Проверь, все ли буквы на записке.")
+                    : (copy.error || "Не совпало. Попробуй ещё раз.");
+
+                if (attempts >= 3 && hint) {
+                    hint.hidden = false;
+                }
+
+                input.select();
+            });
+
+            if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+                window.setTimeout(function () {
+                    input.focus({ preventScroll: true });
+                }, 350);
+            }
+        }
+
+        /* --- клики: шаги, подсказка, переход дальше --- */
         card.addEventListener("click", function (event) {
+            if (event.target.closest('[data-action="key-start"]')) {
+                rewardStage = "enter";
+                render();
+                return;
+            }
+
+            if (event.target.closest('[data-action="key-back"]')) {
+                rewardStage = "clue";
+                render();
+                return;
+            }
+
+            const hintTrigger = event.target.closest('[data-action="key-hint"]');
+            if (hintTrigger) {
+                const hint = card.querySelector(".keylock__hint");
+                if (!hint) return;
+                hint.hidden = !hint.hidden;
+                hintTrigger.textContent = hint.hidden
+                    ? (copy.hintToggle || "Не получается? Подсказка")
+                    : "Скрыть подсказку";
+                return;
+            }
+
             if (!event.target.closest('[data-action="next"]')) return;
 
             if (isLast) {
@@ -339,6 +510,7 @@
             } else {
                 state.index += 1;
                 state.view = "level";
+                rewardStage = "clue";
             }
 
             saveProgress();
@@ -366,11 +538,31 @@
             );
         }).join("");
 
+        const words = QUEST.levels
+            .map(function (level) { return rewardKeys(level.reward)[0]; })
+            .filter(Boolean);
+
+        const phraseBlock = words.length
+            ? '<div class="phrase">' +
+                "<small>" + esc(QUEST.meta.phraseLabel || "Из найденных слов") + "</small>" +
+                "«" + esc(words.join(" ")) + "»" +
+              "</div>"
+            : "";
+
+        const giftBlock = QUEST.meta.giftPlace
+            ? '<div class="gift-place">' +
+                "<b>" + esc(QUEST.meta.giftLabel || "Подарок ждёт") + "</b>" +
+                esc(QUEST.meta.giftPlace) +
+              "</div>"
+            : "";
+
         card.innerHTML =
             '<div class="finale__heart">' + HEART_FILLED + "</div>" +
             '<p class="kicker">' + esc(QUEST.meta.finalKicker) + "</p>" +
             '<h1 class="title">' + esc(QUEST.meta.finalTitle) + "</h1>" +
+            phraseBlock +
             '<p class="final-message">' + esc(QUEST.meta.finalMessage) + "</p>" +
+            giftBlock +
             '<p class="signature">' + esc(QUEST.meta.signature) + "</p>" +
             '<details class="clues">' +
                 "<summary>Все подсказки</summary>" +
@@ -385,8 +577,10 @@
 
             clearProgress();
             state.completed = [];
+            state.keys = [];
             state.index = 0;
             state.view = "intro";
+            rewardStage = "clue";
             render();
             showToast(QUEST.meta.restartToast);
         });
@@ -451,8 +645,18 @@
             });
         }
 
+        if (Array.isArray(saved.keys)) {
+            state.keys = saved.keys.filter(function (id) {
+                const level = QUEST.levels.find(function (item) { return item.id === id; });
+                return Boolean(level) && rewardKeys(level.reward).length > 0;
+            });
+        }
+
         const allDone = QUEST.levels.every(function (level) {
-            return state.completed.indexOf(level.id) !== -1;
+            const solved = state.completed.indexOf(level.id) !== -1;
+            const keyOk = rewardKeys(level.reward).length === 0 ||
+                state.keys.indexOf(level.id) !== -1;
+            return solved && keyOk;
         });
 
         if (typeof saved.index === "number" && (saved.index >= total || allDone)) {
@@ -475,6 +679,15 @@
             state.view = "intro";
             state.index = 0;
             state.completed = [];
+            state.keys = [];
+
+            // Убираем параметр из адреса, чтобы случайное обновление страницы
+            // не стирало прогресс повторно.
+            try {
+                const clean = new URL(window.location.href);
+                clean.searchParams.delete("reset");
+                window.history.replaceState({}, "", clean.pathname + clean.search + clean.hash);
+            } catch (_) { /* не критично */ }
         }
 
         if (params.has("level")) {
@@ -484,6 +697,7 @@
                 state.completed = QUEST.levels.slice(0, state.index).map(function (level) {
                     return level.id;
                 });
+                state.keys = state.completed.slice();
                 state.view = "level";
             }
         }

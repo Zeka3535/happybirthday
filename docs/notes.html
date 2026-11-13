@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Записки для печати · Квест 2026</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        :root {
+            --ink: #2a1a2b;
+            --rose: #b92f5b;
+            --gold: #a06419;
+            --line: rgba(42, 26, 43, 0.16);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 28px 20px 60px;
+            background: #efe9e3;
+            color: var(--ink);
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        .toolbar {
+            max-width: 820px;
+            margin: 0 auto 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .toolbar h1 {
+            flex: 1 1 260px;
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .toolbar button {
+            padding: 11px 18px;
+            border: 0;
+            border-radius: 10px;
+            background: #2a1a2b;
+            color: #fff8f1;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .notice {
+            max-width: 820px;
+            margin: 0 auto 22px;
+            padding: 12px 15px;
+            border: 1px solid rgba(185, 47, 91, 0.35);
+            border-radius: 10px;
+            background: rgba(185, 47, 91, 0.08);
+            font-size: 13.5px;
+            line-height: 1.5;
+        }
+
+        .notice[hidden] { display: none; }
+
+        .sheet {
+            max-width: 820px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .note {
+            position: relative;
+            min-height: 128px;
+            padding: 20px 18px 16px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fffaf3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            break-inside: avoid;
+        }
+
+        .note::before,
+        .note::after {
+            content: "✦";
+            position: absolute;
+            font-size: 9px;
+            color: var(--gold);
+            opacity: 0.6;
+        }
+
+        .note::before { top: 8px; left: 10px; }
+        .note::after { bottom: 8px; right: 10px; }
+
+        .note__num {
+            margin-bottom: 8px;
+            font-size: 8.5px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(42, 26, 43, 0.42);
+        }
+
+        .note__word {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 30px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            line-height: 1.1;
+            text-transform: uppercase;
+            color: var(--rose);
+        }
+
+        .note__hint {
+            margin-top: 10px;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 12px;
+            font-style: italic;
+            color: rgba(42, 26, 43, 0.55);
+        }
+
+        .organizer {
+            max-width: 820px;
+            margin: 40px auto 0;
+        }
+
+        .organizer h2 {
+            margin: 0 0 10px;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .organizer p {
+            margin: 0 0 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: rgba(42, 26, 43, 0.66);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fffaf3;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+            line-height: 1.45;
+        }
+
+        th {
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(42, 26, 43, 0.5);
+            background: rgba(42, 26, 43, 0.04);
+        }
+
+        td b {
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--rose);
+        }
+
+        .empty {
+            padding: 20px;
+            border: 1px dashed var(--line);
+            border-radius: 10px;
+            font-size: 13px;
+            text-align: center;
+            color: rgba(42, 26, 43, 0.5);
+        }
+
+        @media (max-width: 620px) {
+            .sheet { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            @page { size: A4; margin: 14mm; }
+
+            body {
+                padding: 0;
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .toolbar button,
+            .organizer p,
+            .toolbar h1 {
+                display: none;
+            }
+
+            .toolbar { margin: 0; }
+
+            .notice {
+                margin-bottom: 10mm;
+                font-size: 11px;
+            }
+
+            .sheet { gap: 6mm; }
+
+            .note {
+                min-height: 45mm;
+                border-color: #bbb;
+            }
+
+            .note__word { font-size: 30pt; }
+
+            .organizer {
+                margin-top: 12mm;
+                break-before: page;
+            }
+
+            table { font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <h1>Записки для печати</h1>
+        <button type="button" id="printBtn">Печать</button>
+    </div>
+
+    <p class="notice" id="demoNotice" hidden>
+        Сейчас в <code>js/config.js</code> включены демо-ключи. Это не настоящие слова —
+        для квеста сначала замените контент и поставьте <code>meta.demo = false</code>.
+    </p>
+
+    <div class="sheet" id="sheet"></div>
+
+    <section class="organizer">
+        <h2>Шпаргалка для организатора</h2>
+        <p>
+            Не печатайте эту таблицу для неё — оставьте себе. Здесь видно, какую записку
+            куда прятать. Слова в таблице совпадают с тем, что нужно ввести на сайте.
+        </p>
+        <div id="tableMount"></div>
+    </section>
+
+    <script src="../js/config.js"></script>
+    <script>
+        (function () {
+            "use strict";
+
+            // config.js объявляет QUEST через const — это глобальная лексическая
+            // переменная, а не свойство window, поэтому обращаемся по имени.
+            const config = (typeof QUEST !== "undefined") ? QUEST : null;
+            const levels = (config && config.levels) || [];
+            const sheet = document.getElementById("sheet");
+            const tableMount = document.getElementById("tableMount");
+            const notice = document.getElementById("demoNotice");
+
+            function keys(reward) {
+                if (!reward || reward.key == null) return [];
+                const list = Array.isArray(reward.key) ? reward.key : [reward.key];
+                return list.filter(function (value) {
+                    return value != null && String(value).trim() !== "";
+                });
+            }
+
+            if (config && config.meta && config.meta.demo) {
+                notice.hidden = false;
+            }
+
+            const notes = levels
+                .map(function (level, index) {
+                    return { level: level, index: index, word: keys(level.reward)[0] };
+                })
+                .filter(function (entry) { return entry.word; });
+
+            if (!notes.length) {
+                sheet.innerHTML =
+                    '<div class="empty">В конфиге нет ни одного уровня с полем <code>reward.key</code>.</div>';
+            }
+
+            notes.forEach(function (entry, order) {
+                const note = document.createElement("div");
+                note.className = "note";
+                note.innerHTML =
+                    '<div class="note__num">Ключ ' + (order + 1) + "</div>" +
+                    '<div class="note__word">' + String(entry.word).toUpperCase() + "</div>" +
+                    '<div class="note__hint">следующее слово — на сайте</div>';
+                sheet.appendChild(note);
+            });
+
+            const rows = levels.map(function (level, index) {
+                const word = keys(level.reward)[0];
+                const reward = level.reward || {};
+                return (
+                    "<tr>" +
+                        "<td>" + (index + 1) + "</td>" +
+                        "<td>" + (level.eyebrow || "Глава") + "</td>" +
+                        "<td>" + (word ? "<b>" + word + "</b>" : "— без записки —") + "</td>" +
+                        "<td>" + (reward.text || "—") + "</td>" +
+                    "</tr>"
+                );
+            }).join("");
+
+            tableMount.innerHTML =
+                "<table>" +
+                    "<thead><tr>" +
+                        "<th>#</th><th>Глава</th><th>Слово на записке</th><th>Куда спрятать</th>" +
+                    "</tr></thead>" +
+                    "<tbody>" + rows + "</tbody>" +
+                "</table>";
+
+            document.getElementById("printBtn").addEventListener("click", function () {
+                window.print();
+            });
+        })();
+    </script>
+</body>
+</html>
