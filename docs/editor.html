@@ -252,22 +252,51 @@
             margin-top: 12px;
         }
 
-        .editor-map__row {
+        .editor-map--grid {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
-        .editor-map input {
-            padding: 8px;
+        .editor-map__row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .editor-map__cell {
+            min-width: 28px;
+            height: 28px;
             border: 1px solid var(--line);
-            border-radius: 8px;
+            border-radius: 6px;
             background: #fff;
             color: var(--ink);
-            font-family: "Courier New", ui-monospace, monospace;
-            font-size: 13px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            font: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .editor-map__cell[data-char="S"] {
+            background: rgba(143, 211, 199, 0.45);
+            border-color: rgba(80, 160, 145, 0.6);
+        }
+
+        .editor-map__cell[data-char="#"] {
+            background: rgba(42, 26, 43, 0.12);
+            color: rgba(42, 26, 43, 0.7);
+        }
+
+        .editor-map__cell[data-char="F"] {
+            background: rgba(233, 184, 114, 0.45);
+            border-color: rgba(160, 100, 25, 0.6);
+        }
+
+        .editor-map__hint {
+            margin: 10px 0 0;
+            font-size: 12px;
+            font-style: italic;
+            color: rgba(42, 26, 43, 0.55);
         }
 
         .editor textarea { min-height: 90px; resize: vertical; }
@@ -450,27 +479,51 @@
 
                 if (level.type === "maze") {
                     const mapBox = document.createElement("div");
-                    mapBox.className = "editor-map";
+                    mapBox.className = "editor-map editor-map--grid";
 
-                    for (let rowIndex = 0; rowIndex < (level.grid || []).length; rowIndex++) {
-                        const rowLabel = document.createElement("label");
-                        rowLabel.className = "editor-map__row";
-                        const rowInput = document.createElement("input");
-                        rowInput.type = "text";
-                        rowInput.value = (level.grid || [])[rowIndex] || "";
-                        rowInput.setAttribute("maxlength", "12");
-                        rowInput.addEventListener("input", function () {
-                            const target = QUEST.levels[index];
-                            if (!target || !Array.isArray(target.grid)) target.grid = [];
-                            while (target.grid.length < rowIndex + 1) target.grid.push("");
-                            target.grid[rowIndex] = rowInput.value;
-                        });
-                        rowLabel.textContent = "Строка " + (rowIndex + 1) + ":";
-                        mapBox.appendChild(rowLabel);
-                        mapBox.appendChild(rowInput);
+                    const rows = (level.grid || []).filter(function (row) { return row != null; });
+                    const cols = rows.length ? Math.max.apply(null, rows.map(function (row) { return String(row).length; })) : 7;
+
+                    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+                        const rowDiv = document.createElement("div");
+                        rowDiv.className = "editor-map__row";
+
+                        for (let colIndex = 0; colIndex < cols; colIndex++) {
+                            const char = (rows[rowIndex] || "")[colIndex] || ".";
+                            const cell = document.createElement("button");
+                            cell.type = "button";
+                            cell.className = "editor-map__cell";
+                            cell.textContent = char;
+                            cell.setAttribute("data-char", char);
+                            cell.setAttribute("data-row", String(rowIndex));
+                            cell.setAttribute("data-col", String(colIndex));
+                            cell.addEventListener("click", function () {
+                                const target = QUEST.levels[index];
+                                if (!target) return;
+                                if (!Array.isArray(target.grid)) target.grid = [];
+                                while (target.grid.length < rowIndex + 1) target.grid.push("");
+                                const current = String(target.grid[rowIndex] || "");
+                                const chars = [".", "S", "#", "F"];
+                                let currentIndex = chars.indexOf(current[colIndex] || ".");
+                                if (currentIndex < 0) currentIndex = 0;
+                                const nextIndex = (currentIndex + 1) % chars.length;
+                                const nextChar = chars[nextIndex];
+                                target.grid[rowIndex] = current.slice(0, colIndex) + nextChar + current.slice(colIndex + 1);
+                                cell.setAttribute("data-char", nextChar);
+                                cell.textContent = nextChar;
+                            });
+                            rowDiv.appendChild(cell);
+                        }
+
+                        mapBox.appendChild(rowDiv);
                     }
 
                     card.appendChild(mapBox);
+
+                    const mapHint = document.createElement("p");
+                    mapHint.className = "editor-map__hint";
+                    mapHint.textContent = "Нажми на клетку мышкой — чтобы переключить состояние: старт, стена, финиш.";
+                    card.appendChild(mapHint);
                 }
 
                 editor.appendChild(card);
